@@ -27,3 +27,6 @@ Alle sieben Dateien in deinem bestehenden GitHub-Repository ersetzen. App anschl
 
 
 Zusatz: Diese Variante startet standardmäßig im pastell-pinken Design. Über die Design-Schaltfläche kann weiterhin zwischen den anderen Farbwelten gewechselt werden.
+
+
+Zusätzliche Designs in dieser Version: Salbei, Pastell-Pink, Schwarz-Gold, Blau-Schwarz, Pink-Schwarz, Lavendel und Ice / Hellblau. Über die Design-Schaltfläche lässt sich zwischen allen Varianten durchschalten.

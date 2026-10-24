@@ -1,5 +1,5 @@
-const CACHE='budget-studio-offline-v8-2-pink';
-const ASSETS=['./index.html','./style.css?v=082p','./app.js?v=082p','./manifest.webmanifest','./icon.svg'];
+const CACHE='budget-studio-offline-v8-3-themes';
+const ASSETS=['./index.html','./style.css?v=083t','./app.js?v=083t','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
