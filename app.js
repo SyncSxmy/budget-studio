@@ -141,6 +141,7 @@ let firstSetupPending=false;try{firstSetupPending=!hasSavedWorkspace&&!localStor
 let workspace=loadWorkspace(),storageLocked=!workspace;
 if(!workspace)workspace={version:2,activeId:null,households:[{id:uid(),name:'Wiederherstellung erforderlich',kind:'personal',members:[],data:blank()}]};
 if(!workspace.activeId||!workspace.households.some(h=>h.id===workspace.activeId))workspace.activeId=workspace.households[0].id;
+let bankImportDraft=null;
 let state=workspace.households.find(h=>h.id===workspace.activeId).data,view='dashboard',selectedMonth=dateToday().slice(0,7),choosing=storageLocked||!hasSavedWorkspace||workspace.households.length>1;
 const app=document.querySelector('#app'),picker=document.querySelector('#household-screen');
 function household(){return workspace.households.find(h=>h.id===workspace.activeId)}
@@ -161,15 +162,16 @@ function householdPicker(){
 }
 function openPicker(){choosing=true;householdPicker()}
 function resumeSingleHousehold(){
+ bankImportDraft=null;
  if(storageLocked||workspace.households.length!==1){openPicker();return}
  workspace.activeId=workspace.households[0].id;
  state=household().data;
  choosing=false;view='dashboard';
  applyRecurring();householdPicker();render();
 }
-function selectHousehold(id){selectedTrade=null;selectedCalculator=null;pendingCalc=null;const h=workspace.households.find(x=>x.id===id);if(!h)return;firstSetupPending=false;workspace.activeId=id;state=h.data;save();applyRecurring();choosing=false;view='dashboard';householdPicker();render()}
+function selectHousehold(id){bankImportDraft=null;selectedTrade=null;selectedCalculator=null;pendingCalc=null;const h=workspace.households.find(x=>x.id===id);if(!h)return;firstSetupPending=false;workspace.activeId=id;state=h.data;save();applyRecurring();choosing=false;view='dashboard';householdPicker();render()}
 
-function setView(v){if(v!=='calculator')pendingCalc=null;if(!['dashboard','transactions','accounts','planning','more','goals','debts','subscriptions','recurring','payments','calendar','settings','financePlanning','trades','calculators','calculator','customBuilder','estimates'].includes(v))return;view=v;render()}
+function setView(v){if(v!=='calculator')pendingCalc=null;if(!['dashboard','transactions','accounts','planning','more','goals','debts','subscriptions','recurring','payments','calendar','settings','bankImport','subscriptionFinder','financePlanning','trades','calculators','calculator','customBuilder','estimates'].includes(v))return;view=v;render()}
 function accountBalance(id){return money(state.accounts.find(a=>a.id===id)?.opening)+sum(state.transactions.filter(t=>t.accountId===id),t=>t.type==='income'?money(t.amount):-money(t.amount))}
 function form(fields,type,label){return `<form class="panel form" data-form="${type}">${fields}<button class="primary wide" type="submit">${label}</button></form>`}
 const field=(name,label,type='text',extra='')=>`<label>${label}<input name="${name}" type="${type}" ${extra} required></label>`;
@@ -197,7 +199,7 @@ function transactions(){
 const vat=businessHousehold()?`<div class="tax-heading">Steueraufteilung für Geschäfts­buchungen</div>${options('entryMode','Eingegebener Betrag ist',[['gross','Brutto (inkl. USt)'],['net','Netto (ohne USt)']])}${options('vatRate','Umsatzsteuersatz',[['19','19 %'],['7','7 %'],['0','0 %']])}<div id="tax-preview" class="tax-preview" aria-live="polite">Netto, Steueranteil und Brutto werden bei Eingabe berechnet.</div>`:'';
 return `<h2>Buchungen</h2>${businessHousehold()?'<p class="muted">Für Geschäftsbuchungen wählst du, ob du netto oder brutto eingibst. Kontostände und Cashflow berücksichtigen immer den tatsächlich gebuchten Bruttobetrag.</p>':''}${form(options('type','Art',[['expense','Ausgabe'],['income','Einnahme']])+field('amount','Betrag (€)','number','min="0.01" step="0.01"')+vat+field('date','Datum','date',`value="${dateToday()}"`)+field('category','Kategorie','text','maxlength="60"')+options('accountId','Konto',state.accounts.map(a=>[a.id,a.name]))+field('note','Beschreibung','text','maxlength="120"'),'transactions','Buchung hinzufügen')}${list([...state.transactions].sort((a,b)=>b.date.localeCompare(a.date)),t=>`<div class="item row"><div><b>${esc(t.category)}</b><div class="muted">${esc(t.date)} · ${esc(t.note)} · ${esc(state.accounts.find(a=>a.id===t.accountId)?.name||'Gelöschtes Konto')}</div>${businessHousehold()?`<div class="muted tax-line">${Number.isFinite(t.netAmount)&&Number.isFinite(t.vatAmount)?`Netto ${eur(t.netAmount)} · USt ${t.vatRate}%: ${eur(t.vatAmount)} · Brutto ${eur(t.amount)}`:'Steueraufteilung nicht hinterlegt'}</div>`:''}</div><div><b class="${t.type==='income'?'positive':'negative'}">${t.type==='income'?'+':'−'}${eur(t.amount)}</b> ${removeButton('transactions',t.id)}</div></div>`)}`}
 
-function accounts(){return `<h2>Konten</h2><div class="panel bank-info"><b>Bankkonten &amp; Kreditkarten</b><p class="muted">Girokonto, Kreditkarte oder Geschäftskonto kannst du hier schon manuell als Konto anlegen. Ein direkter Bankabruf ist noch <strong>nicht</strong> eingebaut; bitte keine Online-Banking-Zugangsdaten eingeben.</p></div>${form(field('name','Kontoname','text','maxlength="60"')+field('opening','Anfangsbestand (€)','number','step="0.01" value="0"'),'accounts','Konto hinzufügen')}${list(state.accounts,a=>`<div class="item row"><div><b>${esc(a.name)}</b><div class="muted">Aktueller Saldo</div></div><div><b>${eur(accountBalance(a.id))}</b> ${state.accounts.length>1?removeButton('accounts',a.id):''}</div></div>`)}`}
+function accounts(){return `<h2>Konten</h2><div class="panel bank-info"><b>Bankkonten &amp; Kreditkarten</b><p class="muted">Buchungen aus Girokonten und Kreditkarten kannst du zunächst per CSV-Kontoauszug übernehmen. Die direkte Bankfreigabe kommt später mit einem sicheren Open-Banking-Dienst.</p><button data-open-view="bankImport" class="primary" type="button">Kontoauszug importieren</button></div>${form(field('name','Kontoname','text','maxlength="60"')+field('opening','Anfangsbestand (€)','number','step="0.01" value="0"'),'accounts','Konto hinzufügen')}${list(state.accounts,a=>`<div class="item row"><div><b>${esc(a.name)}</b><div class="muted">Aktueller Saldo</div></div><div><b>${eur(accountBalance(a.id))}</b> ${state.accounts.length>1?removeButton('accounts',a.id):''}</div></div>`)}`}
 function goals(){return `<h2>Sparziele</h2>${form(field('name','Sparziel','text','maxlength="60"')+field('target','Zielbetrag (€)','number','min="0.01" step="0.01"')+field('saved','Bereits gespart (€)','number','min="0" step="0.01" value="0"'),'goals','Sparziel hinzufügen')}${list(state.goals,g=>{const p=Math.min(100,Math.max(0,100*money(g.saved)/money(g.target)));return `<div class="item"><div class="row"><b>${esc(g.name)}</b>${removeButton('goals',g.id)}</div><p>${eur(g.saved)} von ${eur(g.target)} · ${p.toFixed(0)} %</p><div class="bar"><div style="width:${p}%"></div></div></div>`})}<p class="muted">Sparziele werden vorerst manuell gepflegt und nicht automatisch vom Kontostand abgezogen.</p>`}
 function debts(){return `<h2>Schulden</h2>${form(field('name','Bezeichnung','text','maxlength="60"')+field('balance','Restschuld (€)','number','min="0" step="0.01"')+field('payment','Monatliche Rate (€)','number','min="0" step="0.01"'),'debts','Schuld hinzufügen')}${list(state.debts,d=>`<div class="item row"><div><b>${esc(d.name)}</b><div class="muted">Monatliche Rate ${eur(d.payment)}</div></div><div><b>${eur(d.balance)}</b> ${removeButton('debts',d.id)}</div></div>`)}<p class="muted">Raten und Restschuld werden vorerst manuell gepflegt; keine Zinsberechnung.</p>`}
 function subscriptions(){return `<h2>Abonnements</h2>${form(field('name','Abo-Name','text','maxlength="60"')+field('amount','Betrag je Zahlung (€)','number','min="0.01" step="0.01"')+options('frequency','Zahlungsintervall',[['monthly','Monatlich'],['yearly','Jährlich']]),'subscriptions','Abo hinzufügen')}${list(state.subscriptions,s=>`<div class="item row"><div><b>${esc(s.name)}</b><div class="muted">${s.frequency==='yearly'?'Jährlich':'Monatlich'} · Jahreskosten ${eur(money(s.amount)*(s.frequency==='yearly'?1:12))}</div></div><div><b>${eur(s.amount)}</b> ${removeButton('subscriptions',s.id)}</div></div>`)}<p class="muted">Abos werden nicht automatisch als Buchung eingetragen.</p>`}
@@ -218,13 +220,13 @@ function applyRecurring(){
 function recurring(){const items=state.recurring||[];
 return `<h2>Wiederkehrende Zahlungen</h2><p class="muted">Einmal einrichten: Fällige Einnahmen und Ausgaben werden beim nächsten Öffnen dieses Haushalts automatisch gebucht – auch offline.</p>${form(field('name','Name','text','maxlength="60"')+options('type','Art',[['expense','Ausgabe'],['income','Einnahme']])+field('amount','Betrag (€)','number','min="0.01" step="0.01"')+field('category','Kategorie','text','maxlength="60"')+options('accountId','Konto',state.accounts.map(a=>[a.id,a.name]))+options('frequency','Intervall',[['monthly','Monatlich'],['yearly','Jährlich']])+field('nextDate','Erste Fälligkeit','date',`value="${dateToday()}"`),'recurring','Wiederkehrende Zahlung anlegen')}${list(items,r=>`<div class="item row"><div><b>${esc(r.name)}</b><div class="muted">${r.type==='income'?'Einnahme':'Ausgabe'} · ${r.frequency==='monthly'?'Monatlich':'Jährlich'} · nächste Fälligkeit: ${esc(r.nextDate)} · ${esc(state.accounts.find(a=>a.id===r.accountId)?.name||'Konto fehlt')}</div></div><div><b>${eur(r.amount)}</b> ${removeButton('recurring',r.id)}</div></div>`)}<p class="muted">Erstellen mit einem Datum in der Vergangenheit bucht die bisher fälligen Termine nach. Bereits gebuchte Beträge bleiben nach dem Löschen einer Regel erhalten. Maximal 240 Nachbuchungen pro Regel und Öffnung.</p>`}
 function payments(){
- const abo=subscriptions().replace('<h2>Abonnements</h2>','<h3>Abos ohne automatische Buchung</h3>');
+ const abo=subscriptions().replace('<h2>Abonnements</h2>','<h3>Abos und erkannte Verträge</h3>');
  const fixed=recurring().replace('<h2>Wiederkehrende Zahlungen</h2>','<h3>Automatische Fixkosten und Einnahmen</h3>');
- return `<div class="heading"><div><small>ALLE REGELMÄSSIGEN KOSTEN</small><h2>Abos &amp; Fixkosten</h2><p class="muted">Behalte Verträge und automatische Zahlungen gemeinsam im Blick.</p></div></div><div class="notice-panel"><b>Wichtig:</b> Ein Abo ist nur eine Kostenübersicht. Für eine automatische Buchung musst du die Zahlung bei Fixkosten eintragen. Lege dieselbe Zahlung dort nicht zusätzlich ein zweites Mal an.</div>${fixed}<div class="subsection-separator"></div>${abo}`;
+ return `<div class="heading"><div><small>ALLE REGELMÄSSIGEN KOSTEN</small><h2>Abos &amp; Fixkosten</h2><p class="muted">Behalte Verträge und automatische Zahlungen gemeinsam im Blick.</p></div></div><div class="notice-panel"><b>Wichtig:</b> Ein Abo ist nur eine Kostenübersicht. Für eine automatische Buchung musst du die Zahlung bei Fixkosten eintragen. Erkannte Abos sind zunächst nur eine Übersicht und erzeugen keine zusätzlichen Kontobuchungen. Bei laufendem Kontoauszug-Import bitte dieselbe Abbuchung nicht nochmals als automatische Fixkosten buchen.</div>${fixed}<div class="subsection-separator"></div>${abo}`;
 }
 function planning(){return businessHousehold()?toolsHub():financePlanning()}
-function financePlanning(){return `<div class="heading"><div><small>DEINE FINANZPLANUNG</small><h2>Planung</h2><p class="muted">Alles Wichtige für deine nächsten Monate.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="payments"><span class="feature-icon">↻</span><span><b>Abos &amp; Fixkosten</b><small>Regelmäßige Zahlungen zentral</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="calendar"><span class="feature-icon">▦</span><span><b>Finanzkalender</b><small>Zahlungen &amp; Fälligkeiten</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="goals"><span class="feature-icon">◎</span><span><b>Sparziele</b><small>Deine Ziele im Blick</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="debts"><span class="feature-icon">▤</span><span><b>Schulden</b><small>Raten und Restschulden</small></span><span class="feature-arrow">›</span></button></div>`}
-function more(){return `<div class="heading"><div><small>DEIN BUDGET STUDIO</small><h2>Mehr</h2><p class="muted">Verwalte deine Haushalte und Daten.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="settings"><span class="feature-icon">⚙</span><span><b>Daten &amp; Einstellungen</b><small>Haushalte, Sicherungen, Design</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="${businessHousehold()?'financePlanning':'planning'}"><span class="feature-icon">▦</span><span><b>${businessHousehold()?'Finanzplanung':'Planung'}</b><small>Fixkosten, Kalender, Ziele</small></span><span class="feature-arrow">›</span></button></div>${businessHousehold()?`<div class="feature-grid"><button class="feature-link" data-open-view="planning"><span class="feature-icon">▥</span><span><b>Gewerke &amp; Material</b><small>Rechner und Projekte</small></span><span class="feature-arrow">›</span></button></div><div class="panel"><b>Netto &amp; Brutto</b><p class="muted">Für Buchungen im Geschäftshaushalt kannst du Netto/Brutto und 0 %, 7 % oder 19 % auswählen. Die Monatsübersicht zeigt rechnerische Steueranteile.</p></div>`: ''}<div class="panel bank-info"><b>Bankanbindung (geplant)</b><p class="muted">Ein späterer Bankabgleich müsste mit ausdrücklicher Freigabe über einen sicheren Open-Banking-Dienst erfolgen. Aktuell werden keinerlei Bankdaten abgerufen oder übertragen.</p></div>`}
+function financePlanning(){return `<div class="heading"><div><small>DEINE FINANZPLANUNG</small><h2>Planung</h2><p class="muted">Alles Wichtige für deine nächsten Monate.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="subscriptionFinder"><span class="feature-icon">✦</span><span><b>Abos automatisch erkennen</b><small>Regelmäßige Abbuchungen analysieren</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="bankImport"><span class="feature-icon">⇩</span><span><b>Kontoauszug importieren</b><small>CSV von Girokonto oder Kreditkarte</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="payments"><span class="feature-icon">↻</span><span><b>Abos &amp; Fixkosten</b><small>Regelmäßige Zahlungen zentral</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="calendar"><span class="feature-icon">▦</span><span><b>Finanzkalender</b><small>Zahlungen &amp; Fälligkeiten</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="goals"><span class="feature-icon">◎</span><span><b>Sparziele</b><small>Deine Ziele im Blick</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="debts"><span class="feature-icon">▤</span><span><b>Schulden</b><small>Raten und Restschulden</small></span><span class="feature-arrow">›</span></button></div>`}
+function more(){return `<div class="heading"><div><small>DEIN BUDGET STUDIO</small><h2>Mehr</h2><p class="muted">Verwalte deine Haushalte und Daten.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="settings"><span class="feature-icon">⚙</span><span><b>Daten &amp; Einstellungen</b><small>Haushalte, Sicherungen, Design</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="${businessHousehold()?'financePlanning':'planning'}"><span class="feature-icon">▦</span><span><b>${businessHousehold()?'Finanzplanung':'Planung'}</b><small>Fixkosten, Kalender, Ziele</small></span><span class="feature-arrow">›</span></button></div>${businessHousehold()?`<div class="feature-grid"><button class="feature-link" data-open-view="planning"><span class="feature-icon">▥</span><span><b>Gewerke &amp; Material</b><small>Rechner und Projekte</small></span><span class="feature-arrow">›</span></button></div><div class="panel"><b>Netto &amp; Brutto</b><p class="muted">Für Buchungen im Geschäftshaushalt kannst du Netto/Brutto und 0 %, 7 % oder 19 % auswählen. Die Monatsübersicht zeigt rechnerische Steueranteile.</p></div>`: ''}<div class="panel bank-info"><b>Bank &amp; Abo-Erkennung</b><p class="muted">CSV-Kontoauszüge können lokal importiert werden. Eine echte Bankverbindung benötigt einen Open-Banking-Dienst und einen geschützten Server. Aktuell werden keine Umsätze automatisch abgerufen.</p><button type="button" data-open-view="bankImport">Kontoauszug importieren</button></div>`}
 function planningBack(){return `<button class="planning-back" data-open-view="${businessHousehold()?'financePlanning':'planning'}">‹ Zur Finanzplanung</button>`}
 function calendar(){const m=selectedMonth,actual=state.transactions.filter(t=>t.date.slice(0,7)===m),future=[];const end=m+'-31';
  for(const r of state.recurring||[]){let date=r.nextDate,guard=0;while(isDate(date)&&date<=end&&guard++<36){if(date.slice(0,7)===m)future.push({date,name:r.name,type:r.type,amount:r.amount});const next=nextRecurringDate(r,date);if(next<=date)break;date=next;}}
@@ -253,9 +255,168 @@ if(!d.subscriptions.every(x=>str(x.name,60)&&num(x.amount)&&x.amount>0&&['monthl
 if(d.recurring!==undefined){if(!Array.isArray(d.recurring)||d.recurring.length>10000||!d.recurring.every(r=>r&&str(r.id,100)&&str(r.name,60)&&['income','expense'].includes(r.type)&&num(r.amount)&&r.amount>0&&str(r.category,60)&&accountIds.has(r.accountId)&&['monthly','yearly'].includes(r.frequency)&&isDate(r.nextDate)&&Number.isInteger(r.anchorDay)&&r.anchorDay>=1&&r.anchorDay<=31&&Number.isInteger(r.anchorMonth)&&r.anchorMonth>=1&&r.anchorMonth<=12))return false;}
 return ['sage','rose','gold'].includes(d.theme)
 }
-function settings(){return `<h2>Daten & Datenschutz</h2>${householdSettings()}<div class="panel stack"><p>Alle Haushalte werden lokal in diesem Browser auf diesem Gerät gespeichert. Ohne Konto und ohne Server. Löscht du Browserdaten, können die Daten verloren gehen.</p><button id="export">Alle Haushalte als JSON sichern</button><label>Datensicherung wiederherstellen (Version 0.5 bis 0.7)<input id="import" type="file" accept="application/json,.json"></label><button id="reset">Diesen Haushalt zurücksetzen</button></div>${businessHousehold()?'<div class="panel"><h3>Gewerke &amp; Projektkalkulationen</h3><p class="muted">Gewerke kannst du jederzeit ändern. Eigene Rechner und Projekte werden in der JSON-Datensicherung mitgesichert.</p><button data-open-view="trades">Gewerke verwalten</button></div><div class="panel"><h3>Hinweis zur Umsatzsteuer</h3><p class="muted">Diese Funktion rechnet Nettobeträge, Bruttobeträge und rechnerische Umsatzsteueranteile für 0 %, 7 % oder 19 %. Sie prüft keine Steuerbefreiung, Kleinunternehmerregelung, Reverse Charge, Vorsteuerberechtigung oder Buchführungspflichten. Wiederkehrende automatische Buchungen erhalten derzeit keine Steueraufteilung. Alte Buchungen werden nicht rückwirkend geändert.</p></div>':''}<div class="panel"><h3>Wichtig vor echtem Einsatz</h3><p class="muted">Dies ist eine Testversion, kein geprüftes Finanz-, Buchhaltungs- oder Bankingprodukt. Für Steuererklärungen und Unternehmensbuchhaltung nicht als alleinige Grundlage verwenden. Bitte keine sensiblen echten Daten verwenden, bevor wir Sicherung, Sicherheit und Berechnungen ausführlich getestet haben.</p></div>`}
+
+/* Budget Studio 0.8: CSV imports and consent-based recurring transaction detection.
+ * All uploaded files are parsed in the browser. No network call, bank secret or token.
+ * Imported records are real account movements; detected subscriptions are display-only.
+ */
+function bankImport(){
+ const blocked=businessHousehold()?'<div class="notice-panel">Auch für Geschäftskonten lassen sich CSV-Dateien importieren. Die automatische Abo-Erkennung wird zunächst für private und gemeinsame Haushalte angeboten. Für Geschäftsbuchungen wird keine automatische Umsatzsteuer-Aufteilung angenommen.</div>':'';
+ const draft=bankImportDraft;
+ return `<div class="heading"><div><small>BANKDATEN · LOKALER IMPORT</small><h2>Kontoauszug importieren</h2><p class="muted">Ausgewählte CSV-Dateien werden nur auf diesem Gerät ausgewertet. Es werden keine Bank-Passwörter benötigt.</p></div></div>${blocked}
+ <div class="panel stack bank-steps"><h3>1. CSV-Datei deiner Bank auswählen</h3><p class="muted">Lade einen CSV-Kontoauszug aus deinem Online-Banking herunter. Typische Spalten: Buchungstag / Datum, Betrag, Verwendungszweck, Empfänger. Nicht alle Bankformate sind bereits unterstützt.</p>
+ <label>Welchem Konto gehören die Buchungen? <select id="bank-target-account">${state.accounts.map(a=>`<option value="${esc(a.id)}" ${draft?.accountId===a.id?'selected':''}>${esc(a.name)}</option>`).join('')}</select></label>
+ <label>CSV-Kontoauszug <input id="bank-csv-file" type="file" accept=".csv,text/csv,text/plain"></label>
+ <p class="muted">Wichtig: Anfangsbestand im Konto so wählen, dass er vor den importierten Buchungen liegt. Sonst wird der Saldo doppelt berechnet.</p></div>
+ ${draft?`<div class="panel stack" id="bank-import-preview"><h3>2. Buchungen prüfen</h3><p class="bank-summary"><strong>${draft.ready.length}</strong> neue Buchung(en) · ${draft.duplicates} bereits vorhanden · ${draft.invalid} nicht lesbar</p><p class="muted">Aus Datei „${esc(draft.fileName)}“ · Konto ${esc(state.accounts.find(a=>a.id===draft.accountId)?.name||'–')}</p>${draft.warnings.length?`<div class="notice-panel">${draft.warnings.map(esc).join(' · ')}</div>`:''}<div class="bank-preview-list">${draft.ready.slice(0,8).map(r=>`<div class="bank-preview-row"><span>${esc(r.date)}<br><b>${esc(r.merchant||r.note)}</b></span><b class="${r.type==='income'?'positive':'negative'}">${r.type==='income'?'+':'−'}${eur(r.amount)}</b></div>`).join('')||'<p class="muted">Keine neuen Buchungen gefunden.</p>'}</div><div class="settings-actions"><button type="button" class="primary" id="bank-import-commit" ${draft.ready.length?'':'disabled'}>Neue Buchungen übernehmen</button><button type="button" id="bank-import-cancel">Verwerfen</button></div></div>`:''}
+ <div class="panel bank-info"><b>Direkte Bankverbindung – noch nicht aktiv</b><p class="muted">Später kann hier nach sicherer Bankfreigabe ein Konto verbunden werden. Dafür benötigen wir einen Open-Banking-Anbieter wie finAPI oder Tink und einen geschützten Server. Deine Bank-PIN darfst du hier niemals eingeben.</p></div>`;
+}
+function csvParse(text,separator){
+ const out=[];let row=[],cell='',quote=false;
+ for(let i=0;i<text.length;i++){
+  const ch=text[i];
+  if(quote){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++}else if(ch==='"')quote=false;else cell+=ch;}
+  else if(ch==='"')quote=true;
+  else if(ch===separator){row.push(cell);cell='';}
+  else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x.trim()!==''))out.push(row);row=[];cell='';}
+  else cell+=ch;
+  if(out.length>12000)throw Error('Zu viele Buchungen (maximal 12.000 Zeilen).');
+ }
+ if(quote)throw Error('Die CSV-Datei enthält ein nicht geschlossenes Anführungszeichen.');
+ row.push(cell);if(row.some(x=>x.trim()!==''))out.push(row);
+ return out;
+}
+function cleanHeader(v){return String(v||'').replace(/^\ufeff/,'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'')}
+function headerIndex(row,keys){return row.findIndex(x=>keys.some(key=>x===key||x.startsWith(key)))}
+function headerColumns(row){const h=row.map(cleanHeader);
+ const date=headerIndex(h,['buchungstag','buchungsdatum','valuta','wertstellung','datum','date','transactiondate','bookingdate']);
+ const amount=headerIndex(h,['betrag','umsatz','amount','value','summe']);
+ const debit=headerIndex(h,['soll','belastung','debit','abbuchung']);
+ const credit=headerIndex(h,['haben','gutschrift','credit']);
+ const counterparty=headerIndex(h,['auftraggeberempfanger','begunstigterzahlungspflichtiger','beguenstigterzahlungspflichtiger','empfangerauftraggeber','empfaengerauftraggeber','gegenpartei','partnername','empfanger','empfaenger','zahlungsempfanger','zahlungsempfaenger','auftraggeber','name','merchant','payee','counterparty']);
+ const purpose=headerIndex(h,['verwendungszweck','buchungstext','buchungsdetails','beschreibung','umsatztext','zweck','text','purpose','description','information','detail']);
+ const reference=headerIndex(h,['transaktionsid','transactionid','buchungsid','referenznummer','referenz']);
+ return {date,amount,debit,credit,counterparty,purpose,reference,valid:date>=0&&(amount>=0||(debit>=0&&credit>=0))};
+}
+function parseBankAmount(raw){
+ let t=String(raw??'').trim().replace(/[€\s\u00a0]/g,'').replace(/[−–]/g,'-');
+ if(!t)return null;
+ let negative=t[0]==='('&&t.at(-1)===')';if(negative)t=t.slice(1,-1);
+ const dot=t.lastIndexOf('.'),comma=t.lastIndexOf(',');
+ if(dot>=0&&comma>=0)t=comma>dot?t.replace(/\./g,'').replace(',','.'):t.replace(/,/g,'');
+ else if(comma>=0)t=t.replace(/\./g,'').replace(',','.');
+ else if((t.match(/\./g)||[]).length>1)t=t.replace(/\./g,'');
+ if(!/^[+-]?\d+(\.\d+)?$/.test(t))return null;
+ const n=Number(t)*(negative?-1:1);return Number.isFinite(n)&&Math.abs(n)<=1e9?round2(n):null;
+}
+function parseBankDate(v){const s=String(v||'').trim();let y,m,d;
+ if(/^\d{4}-\d{2}-\d{2}/.test(s))return isDate(s.slice(0,10))?s.slice(0,10):null;
+ const x=s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4}|\d{2})/);if(!x)return null;
+ d=Number(x[1]);m=Number(x[2]);y=Number(x[3]);if(y<100)y+=y<70?2000:1900;
+ const date=[y,String(m).padStart(2,'0'),String(d).padStart(2,'0')].join('-');return isDate(date)?date:null;
+}
+function normalizeMerchant(name){return String(name||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\b(DE\d{20}|[A-Z]{2}\d{2}[A-Z\d]{10,30}|[A-Z0-9]{15,})\b/g,' ').replace(/\b\d{5,}\b/g,' ').replace(/\b(GMBH|UG|AG|SE|KG|LTD|INC|CO|EU|DEUTSCHLAND|PAYMENT|LASTSCHRIFT|SEPA|KARTENZAHLUNG|POS)\b/g,' ').replace(/[^A-Z0-9]+/g,' ').trim().split(/\s+/).slice(0,6).join(' ').slice(0,55)}
+function hashImportKey(parts){const str=parts.join('|');let a=2166136261;for(let i=0;i<str.length;i++){a^=str.charCodeAt(i);a=Math.imul(a,16777619)}return (a>>>0).toString(36)}
+function parsedBankCSV(text,accountId){
+ const candidates=[',',';','\t'].map(sep=>({sep,rows:csvParse(text.replace(/^\ufeff/,''),sep)}));
+ let chosen=null;
+ for(const x of candidates)for(let i=0;i<Math.min(35,x.rows.length);i++){const columns=headerColumns(x.rows[i]);if(!columns.valid)continue;const score=3+(columns.counterparty>=0?2:0)+(columns.purpose>=0?2:0)+(x.sep===';'?0.1:0);if(!chosen||score>chosen.score)chosen={...x,at:i,cols:columns,score}}
+ if(!chosen)throw Error('Keine passende Datum- und Betragsspalte gefunden. Bitte einen CSV-Kontoauszug mit Spaltenüberschriften exportieren.');
+ const {rows,at,cols}=chosen, ready=[],warnings=[],seen=new Set(state.transactions.filter(t=>t.accountId===accountId).map(t=>t.importKey).filter(Boolean));
+ let duplicates=0,invalid=0,skippedZero=0;
+ for(const colsRow of rows.slice(at+1)){
+  if(!colsRow.some(v=>v.trim()))continue;
+  const date=parseBankDate(colsRow[cols.date]);
+  let amount=cols.amount>=0?parseBankAmount(colsRow[cols.amount]):null;
+  if(cols.amount<0){const debit=parseBankAmount(colsRow[cols.debit])||0,credit=parseBankAmount(colsRow[cols.credit])||0;amount=round2(credit-Math.abs(debit));}
+  if(!date||amount===null){invalid++;continue}if(amount===0){skippedZero++;continue}
+  const merchant=String(cols.counterparty>=0?colsRow[cols.counterparty]||'':'').trim().slice(0,80);
+  const purpose=String(cols.purpose>=0?colsRow[cols.purpose]||'':'').trim().slice(0,120);
+  const note=(purpose||merchant||'CSV-Bankbuchung').slice(0,120);
+  const normalized=normalizeMerchant(merchant||purpose||'BANK');
+  const ref=cols.reference>=0?String(colsRow[cols.reference]||'').trim().slice(0,100):'';
+  const key=hashImportKey([accountId,date,amount,normalized,purpose,ref]);
+  if(seen.has(key)){duplicates++;continue}seen.add(key);
+  ready.push({date,type:amount<0?'expense':'income',amount:Math.abs(amount),accountId,category:'Unkategorisiert',note,merchant:merchant||purpose.slice(0,60),merchantKey:normalized,importKey:key,importedFrom:'csv'});
+ }
+ if(skippedZero)warnings.push(`${skippedZero} Nullbuchung(en) übersprungen`);
+ if(invalid)warnings.push(`${invalid} Zeile(n) ohne auswertbares Datum oder Betrag`);
+ if(!ready.length&&!duplicates)warnings.push('Prüfe, ob deine Bank ein anderes CSV-Format verwendet.');
+ return {ready,duplicates,invalid,warnings};
+}
+async function onBankCSV(input){
+ const file=input.files?.[0];if(!file)return;
+ const accountId=app.querySelector('#bank-target-account')?.value;
+ if(!state.accounts.some(a=>a.id===accountId))return alert('Bitte ein gültiges Konto auswählen.');
+ if(file.size>3_000_000)return alert('Die CSV-Datei ist zu groß (maximal 3 MB).');
+ try{
+  let raw=await file.arrayBuffer();let decoded=new TextDecoder('utf-8',{fatal:false}).decode(raw);
+  if(decoded.includes('\uFFFD'))decoded=new TextDecoder('windows-1252').decode(raw);
+  const result=parsedBankCSV(decoded,accountId);
+  bankImportDraft={...result,accountId,fileName:file.name.slice(0,120),householdId:workspace.activeId};render();
+ }catch(err){bankImportDraft=null;alert('CSV konnte nicht verarbeitet werden: '+(err.message||'Unbekannter Fehler'));render()}
+}
+function commitBankImport(){
+ const d=bankImportDraft;if(!d||d.householdId!==workspace.activeId||!state.accounts.some(a=>a.id===d.accountId))return alert('Bitte CSV-Datei erneut auswählen.');
+ const existing=new Set(state.transactions.map(t=>t.importKey).filter(Boolean));
+ const fresh=d.ready.filter(r=>!existing.has(r.importKey));
+ if(!fresh.length)return alert('Keine neuen Buchungen zu übernehmen.');
+ if(state.transactions.length+fresh.length>10000)return alert('Zu viele Buchungen. Maximal 10.000 Einträge je Haushalt.');
+ if(!confirm(`${fresh.length} Buchung(en) endgültig in ${nameOfHousehold()} übernehmen? Bereits importierte Buchungen werden nicht doppelt angelegt.`))return;
+ const added=fresh.map(t=>({id:uid(),...t}));state.transactions.push(...added);
+ if(!save()){state.transactions.splice(-added.length,added.length);return;}
+ bankImportDraft=null;setView(businessHousehold()?'transactions':'subscriptionFinder');
+ alert(`${added.length} Buchung(en) übernommen. ${businessHousehold()?'Prüfe die Steueraufteilung manuell.':'Die Abo-Erkennung kannst du jetzt prüfen.'}`);
+}
+function findSubscriptionCandidates(){
+ const groups=new Map();
+ for(const t of state.transactions){
+  if(t.type!=='expense'||!isDate(t.date)||!Number.isFinite(Number(t.amount))||t.amount<=0)continue;
+  const key=normalizeMerchant(t.merchantKey||t.merchant||'');if(!key||key.length<3)continue;
+  const groupId=t.accountId+'|'+key;
+  if(!groups.has(groupId))groups.set(groupId,[]);groups.get(groupId).push(t);
+ }
+ const found=[];
+ for(const [groupId,items] of groups){
+  const arr=[...items].sort((a,b)=>a.date.localeCompare(b.date));
+  if(arr.length<2)continue;
+  const periods=new Map();for(const t of arr){const period=t.date.slice(0,7);if(!periods.has(period))periods.set(period,t)}
+  const unique=[...periods.values()];if(unique.length<2)continue;
+  let monthly=0,yearly=0;let examples=[];
+  for(let i=1;i<unique.length;i++){
+   const prev=unique[i-1],cur=unique[i],days=Math.round((Date.parse(cur.date+'T12:00:00Z')-Date.parse(prev.date+'T12:00:00Z'))/86400000);
+   const tolerance=Math.max(1.5,Math.min(prev.amount,cur.amount)*0.1);
+   if(Math.abs(prev.amount-cur.amount)>tolerance)continue;
+   if(days>=25&&days<=38){monthly++;examples.push(cur)}
+   if(days>=340&&days<=390){yearly++;examples.push(cur)}
+  }
+  const frequency=monthly>0&&monthly>=yearly?'monthly':yearly>0?'yearly':null;
+  if(!frequency)continue;
+  const last=arr.at(-1),median=[...arr.map(t=>t.amount)].sort((a,b)=>a-b)[Math.floor(arr.length/2)];
+  const key=groupId;
+  const already=state.subscriptions.some(s=>s.sourceMerchantKey===key);
+  if(already)continue;
+  const merchant=(arr.find(t=>t.merchant)?.merchant||last.merchant||key.split('|')[1]).slice(0,60);
+  const matches=frequency==='monthly'?monthly:yearly;
+  found.push({id:hashImportKey([key,frequency]),key,merchant,frequency,amount:round2(median),count:arr.length,lastDate:last.date,confidence:matches>=2?'hoch':'mittel',matches});
+ }
+ return found.sort((a,b)=>b.matches-a.matches||b.lastDate.localeCompare(a.lastDate));
+}
+function subscriptionFinder(){
+ const found=findSubscriptionCandidates();
+ return `<div class="heading"><div><small>REGELMÄSSIGE ABBUCHUNGEN</small><h2>Abos erkennen</h2><p class="muted">Budget Studio prüft deine erfassten Kontoumsätze auf wiederkehrende Zahlungen.</p></div></div><div class="notice-panel"><b>Nur Vorschläge:</b> Regelmäßige Zahlungen können auch Miete, Einkauf oder Versicherungen sein. Bitte jeden Treffer prüfen. Erst mit „Als Abo übernehmen“ wird er gespeichert. Es wird <b>keine zusätzliche Kontobuchung</b> erzeugt.</div><div class="panel stack"><h3>${found.length} mögliche Abos gefunden</h3>${found.length?found.map(c=>`<div class="detected-subscription"><div><b>${esc(c.merchant)}</b><div class="muted">${c.frequency==='monthly'?'Etwa monatlich':'Etwa jährlich'} · ${c.count} Abbuchungen · zuletzt ${esc(c.lastDate)} · ${c.confidence==='hoch'?'Mehrfach erkannt':'Bitte besonders prüfen'}</div></div><div class="detected-subscription-action"><strong>${eur(c.amount)}</strong><button type="button" class="primary" data-accept-subscription="${esc(c.id)}">Als Abo übernehmen</button></div></div>`).join(''):'<p class="muted">Noch keine ausreichend regelmäßigen Abbuchungen erkannt. Für monatliche Zahlungen werden mindestens zwei passende Zahlungen aus unterschiedlichen Monaten benötigt. Importiere zuerst einen CSV-Kontoauszug mit mehreren Monaten.</p>'}</div><button data-open-view="bankImport">Weitere Kontoumsätze importieren</button><p class="muted">Die Erkennung nutzt ähnliche Händlernamen, Beträge und Zeitabstände. Sie ist eine heuristische Schätzung und kann Abos übersehen oder falsche Vorschläge machen.</p>`;
+}
+function acceptSubscription(id){
+ const c=findSubscriptionCandidates().find(x=>x.id===id);if(!c)return alert('Der Vorschlag ist nicht mehr vorhanden.');
+ if(!confirm(`„${c.merchant}“ mit etwa ${eur(c.amount)} ${c.frequency==='monthly'?'monatlich':'jährlich'} als Abo speichern? Es werden keine weiteren Kontobuchungen erzeugt.`))return;
+ if(state.subscriptions.length>=10000)return alert('Zu viele Abos.');
+ const newSub={id:uid(),name:c.merchant,amount:c.amount,frequency:c.frequency,sourceMerchantKey:c.key,detected:true};state.subscriptions.push(newSub);
+ if(!save()){state.subscriptions.pop();return}render();
+}
+
+function settings(){return `<h2>Daten & Datenschutz</h2>${householdSettings()}<div class="panel stack"><p>Alle Haushalte werden lokal in diesem Browser auf diesem Gerät gespeichert. Ohne Konto und ohne Server. Löscht du Browserdaten, können die Daten verloren gehen.</p><button id="export">Alle Haushalte als JSON sichern</button><label>Datensicherung wiederherstellen (Version 0.5 bis 0.8)<input id="import" type="file" accept="application/json,.json"></label><button id="reset">Diesen Haushalt zurücksetzen</button></div>${businessHousehold()?'<div class="panel"><h3>Gewerke &amp; Projektkalkulationen</h3><p class="muted">Gewerke kannst du jederzeit ändern. Eigene Rechner und Projekte werden in der JSON-Datensicherung mitgesichert.</p><button data-open-view="trades">Gewerke verwalten</button></div><div class="panel"><h3>Hinweis zur Umsatzsteuer</h3><p class="muted">Diese Funktion rechnet Nettobeträge, Bruttobeträge und rechnerische Umsatzsteueranteile für 0 %, 7 % oder 19 %. Sie prüft keine Steuerbefreiung, Kleinunternehmerregelung, Reverse Charge, Vorsteuerberechtigung oder Buchführungspflichten. Wiederkehrende automatische Buchungen erhalten derzeit keine Steueraufteilung. Alte Buchungen werden nicht rückwirkend geändert.</p></div>':''}<div class="panel"><h3>Wichtig vor echtem Einsatz</h3><p class="muted">Dies ist eine Testversion, kein geprüftes Finanz-, Buchhaltungs- oder Bankingprodukt. Für Steuererklärungen und Unternehmensbuchhaltung nicht als alleinige Grundlage verwenden. Bitte keine sensiblen echten Daten verwenden, bevor wir Sicherung, Sicherheit und Berechnungen ausführlich getestet haben.</p></div>`}
 function drawChart(){const canvas=document.querySelector('#chart');if(!canvas)return;const ctx=canvas.getContext('2d'),m=new Date().toISOString().slice(0,7),data={};state.transactions.filter(t=>t.type==='expense'&&t.date.slice(0,7)===m).forEach(t=>data[t.category]=(data[t.category]||0)+money(t.amount));const vals=Object.values(data),max=Math.max(...vals,1);ctx.clearRect(0,0,650,210);vals.slice(0,8).forEach((v,i)=>{ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--accent').trim();ctx.fillRect(12,12+i*25,Math.max(1,500*v/max),16);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--ink').trim();ctx.font='13px sans-serif';ctx.fillText(eur(v),520,25+i*25)})}
-function render(){const plan=document.querySelector('nav button[data-view=planning]');if(plan)plan.textContent=businessHousehold()?'Werkzeuge':'Planung';document.body.className=state.theme==='rose'?'rose':state.theme==='gold'?'gold':'';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===(['goals','debts','subscriptions','recurring','calendar','payments'].includes(view)?(businessHousehold()?'more':'planning'):['calculators','calculator','trades','customBuilder','estimates'].includes(view)?'planning':view==='financePlanning'||view==='settings'?'more':view)));document.querySelector('#active-household-name').textContent=nameOfHousehold();app.innerHTML=(['goals','debts','calendar','payments','subscriptions','recurring'].includes(view)?planningBack():['calculators','calculator','trades','customBuilder','estimates'].includes(view)?'<button class="planning-back" data-open-view="planning">‹ Zu den Werkzeugen</button>':view==='financePlanning'?'<button class="planning-back" data-open-view="more">‹ Zurück zu Mehr</button>':'')+({dashboard,transactions,accounts,planning,financePlanning,more,goals,debts,subscriptions,recurring,payments,calendar,settings,trades:tradesView,calculators:listTradeCalculators,calculator:calculatorPage,customBuilder,estimates:estimatesView}[view]||dashboard)();drawChart()}
+function render(){const plan=document.querySelector('nav button[data-view=planning]');if(plan)plan.textContent=businessHousehold()?'Werkzeuge':'Planung';document.body.className=state.theme==='rose'?'rose':state.theme==='gold'?'gold':'';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===(['goals','debts','subscriptions','recurring','calendar','payments','bankImport','subscriptionFinder'].includes(view)?(businessHousehold()?'more':'planning'):['calculators','calculator','trades','customBuilder','estimates'].includes(view)?'planning':view==='financePlanning'||view==='settings'?'more':view)));document.querySelector('#active-household-name').textContent=nameOfHousehold();app.innerHTML=(['goals','debts','calendar','payments','subscriptions','recurring','bankImport','subscriptionFinder'].includes(view)?planningBack():['calculators','calculator','trades','customBuilder','estimates'].includes(view)?'<button class="planning-back" data-open-view="planning">‹ Zu den Werkzeugen</button>':view==='financePlanning'?'<button class="planning-back" data-open-view="more">‹ Zurück zu Mehr</button>':'')+({dashboard,transactions,accounts,planning,financePlanning,more,goals,debts,subscriptions,recurring,payments,calendar,bankImport,subscriptionFinder,settings,trades:tradesView,calculators:listTradeCalculators,calculator:calculatorPage,customBuilder,estimates:estimatesView}[view]||dashboard)();drawChart()}
 document.querySelector('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b&&!choosing)setView(b.dataset.view)});
 document.querySelector('#switch-household').addEventListener('click',openPicker);
 picker.addEventListener('click',e=>{const b=e.target.closest('[data-select-household]');if(b)selectHousehold(b.dataset.selectHousehold)});
@@ -274,9 +435,13 @@ if(type==='transactions'&&businessHousehold()){
  delete obj.entryMode;
 }
 const item={id:uid(),...obj};state[type].push(item);if(!save()){state[type].pop();return}if(type==='recurring')applyRecurring();render()});
-app.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.openView){setView(b.dataset.openView);return}if(b.dataset.trade){selectedTrade=b.dataset.trade;selectedCalculator=null;pendingCalc=null;setView('calculators');return}if(b.dataset.calc){selectedCalculator=b.dataset.calc;pendingCalc=null;setView('calculator');return}if(b.dataset.customCalc){const calc=customOf().find(c=>c.id===b.dataset.customCalc);if(!calc)return;selectedTrade=calc.trade;selectedCalculator='custom:'+calc.id;pendingCalc=null;setView('calculator');return}if(b.dataset.deleteCustom){const h=household();if(!confirm('Eigenen Rechner löschen? Gespeicherte Projektkalkulationen bleiben erhalten.'))return;const before=h.customCalculators;h.customCalculators=before.filter(c=>c.id!==b.dataset.deleteCustom);if(!save())h.customCalculators=before;selectedCalculator=null;setView('planning');return}if(b.dataset.deleteEstimate){const h=household();if(!confirm('Projektkalkulation löschen?'))return;const before=h.estimates;h.estimates=before.filter(x=>x.id!==b.dataset.deleteEstimate);if(!save())h.estimates=before;render();return}
+app.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.id==='bank-import-commit'){commitBankImport();return}
+if(b.id==='bank-import-cancel'){bankImportDraft=null;render();return}
+if(b.dataset.acceptSubscription){acceptSubscription(b.dataset.acceptSubscription);return}
+if(b.dataset.openView){setView(b.dataset.openView);return}if(b.dataset.trade){selectedTrade=b.dataset.trade;selectedCalculator=null;pendingCalc=null;setView('calculators');return}if(b.dataset.calc){selectedCalculator=b.dataset.calc;pendingCalc=null;setView('calculator');return}if(b.dataset.customCalc){const calc=customOf().find(c=>c.id===b.dataset.customCalc);if(!calc)return;selectedTrade=calc.trade;selectedCalculator='custom:'+calc.id;pendingCalc=null;setView('calculator');return}if(b.dataset.deleteCustom){const h=household();if(!confirm('Eigenen Rechner löschen? Gespeicherte Projektkalkulationen bleiben erhalten.'))return;const before=h.customCalculators;h.customCalculators=before.filter(c=>c.id!==b.dataset.deleteCustom);if(!save())h.customCalculators=before;selectedCalculator=null;setView('planning');return}if(b.dataset.deleteEstimate){const h=household();if(!confirm('Projektkalkulation löschen?'))return;const before=h.estimates;h.estimates=before.filter(x=>x.id!==b.dataset.deleteEstimate);if(!save())h.estimates=before;render();return}
 if(b.dataset.delete){const type=b.dataset.delete,id=b.dataset.id;if(type==='accounts'&&(state.transactions.some(t=>t.accountId===id)||state.recurring.some(r=>r.accountId===id)))return alert('Konto mit Buchungen oder wiederkehrenden Zahlungen kann nicht gelöscht werden.');if(type==='accounts'&&state.accounts.length<=1)return alert('Das letzte Konto kann nicht gelöscht werden.');if(confirm('Eintrag wirklich löschen?')){const before=state[type];state[type]=before.filter(x=>x.id!==id);if(!save())state[type]=before;render()}}
-if(b.id==='export'){const blob=new Blob([JSON.stringify(workspace,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='budget-studio-0.7-alle-haushalte.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+if(b.id==='export'){const blob=new Blob([JSON.stringify(workspace,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='budget-studio-0.8-alle-haushalte.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 if(b.id==='reset'&&confirm('Alle Konten und Buchungen in diesem Haushalt zurücksetzen? Andere Haushalte bleiben erhalten.')){const prior=household().data;household().data=blank();state=household().data;if(!save()){household().data=prior;state=prior}render()}
 if(b.id==='choose-household')openPicker();
 if(b.id==='rename-household'){const old=household().name,updated=prompt('Neuer Haushaltsname:',old);if(updated===null)return;const name=updated.trim();if(!name||name.length>60)return alert('Name muss zwischen 1 und 60 Zeichen lang sein.');household().name=name;if(!save())household().name=old;render()}
@@ -284,7 +449,7 @@ if(b.id==='delete-household'){if(workspace.households.length===1)return alert('D
 });
 function updateTaxPreview(){const f=app.querySelector('form[data-form="transactions"]'),preview=app.querySelector('#tax-preview');if(!f||!preview)return;const val=Number(f.querySelector('[name="amount"]')?.value),mode=f.querySelector('[name="entryMode"]')?.value,rate=f.querySelector('[name="vatRate"]')?.value;const r=calculateTax(val,mode,rate);preview.textContent=r?`Netto: ${eur(r.net)} · Steueranteil: ${eur(r.vat)} · Brutto: ${eur(r.gross)}`:'Netto, Steueranteil und Brutto werden bei Eingabe berechnet.'}
 app.addEventListener('input',e=>{if(e.target.closest('form[data-form="transactions"]'))updateTaxPreview();if(e.target.closest('form[data-form="estimate"]'))updateEstimatePreview()});
-app.addEventListener('change',async e=>{if(e.target.closest('form[data-form="transactions"]'))updateTaxPreview();if(e.target.id==='month-select'){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value;render()}return}if(e.target.id!=='import')return;const file=e.target.files[0];if(!file)return;if(file.size>5_000_000){alert('Sicherung zu groß (maximal 5 MB).');return}try{const data=JSON.parse(await file.text());
+app.addEventListener('change',async e=>{if(e.target.id==='bank-csv-file'){await onBankCSV(e.target);return}if(e.target.closest('form[data-form="transactions"]'))updateTaxPreview();if(e.target.id==='month-select'){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value;render()}return}if(e.target.id!=='import')return;const file=e.target.files[0];if(!file)return;if(file.size>5_000_000){alert('Sicherung zu groß (maximal 5 MB).');return}try{const data=JSON.parse(await file.text());
  if(validWorkspace(data)){if(!confirm('ALLE jetzigen Haushalte durch diese Sicherung ersetzen?'))return;const previous=workspace;workspace=data;workspace.households.forEach(h=>h.data=normalizeData(h.data));workspace.activeId=workspace.activeId||workspace.households[0].id;state=household().data;storageLocked=false;if(!save()){workspace=previous;state=household().data;return}if(workspace.households.length===1)resumeSingleHousehold();else{openPicker();render()}alert('Sicherung aller Haushalte wurde importiert.');return}
  if(validBackup(data)){if(!confirm('Alte Sicherung (0.5) als NEUEN Haushalt importieren? Vorhandene Haushalte bleiben erhalten.'))return;const newHousehold={id:uid(),name:'Importierter Haushalt',kind:'personal',members:[],data:normalizeData(data)};workspace.households.push(newHousehold);if(!save()){workspace.households.pop();return}openPicker();alert('Alter Datenstand wurde als zusätzlicher Haushalt importiert.');return}
  throw Error('Ungültige Sicherung')

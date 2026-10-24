@@ -1,4 +1,4 @@
-# Budget Studio 0.7 – Business Edition (lokale Testversion)
+# Budget Studio 0.8 – Banking-Vorbereitung und Abo-Erkennung (lokale Testversion)
 
 **Neuer Schwerpunkt:** Jeder Geschäftshaushalt hat ein eigenes Dashboard und individuell ausgewählte Gewerke, ohne die privaten und gemeinsamen Finanzhaushalte zu verändern.
 
@@ -15,9 +15,9 @@
 
 ## Sicherheit / Migration
 
-Die Daten liegen weiterhin **lokal im Browser** unter dem bestehenden Schlüssel `budget-studio-v2`. Die Version enthält keine Bankanbindung, kein Nutzerkonto, kein Tracking und keinen Server. JSON-Sicherungen enthalten alle Haushalte **einschließlich Gewerken, eigenen Rechnern und Projektkalkulationen**. Alte Daten (0.5, 0.6.x) werden übernommen. Ein einzelner Haushalt führt weiterhin direkt ins Dashboard, mehrere Haushalte zur Auswahl.
+Die Daten liegen weiterhin **lokal im Browser** unter dem bestehenden Schlüssel `budget-studio-v2`. Die Version enthält keine direkte Bankanbindung, kein Nutzerkonto, kein Tracking und keinen Server. JSON-Sicherungen enthalten alle Haushalte **einschließlich Gewerken, eigenen Rechnern und Projektkalkulationen**. Alte Daten (0.5, 0.6.x) werden übernommen. Ein einzelner Haushalt führt weiterhin direkt ins Dashboard, mehrere Haushalte zur Auswahl.
 
-**Vor der Aktualisierung**: In Version 0.6.3 bitte über „Mehr“ → „Daten & Einstellungen“ → „Alle Haushalte als JSON sichern“ exportieren. Danach die **sieben Dateien** dieses ZIPs im selben GitHub-Pages-Repository ersetzen, bei bestehender Internetverbindung die installierte App schließen und neu öffnen. Bei hartnäckig veraltetem Stand die Pages-Adresse im Safari-Browser mit `?v=070` aufrufen. **Nicht** die Website-Daten löschen – dadurch gehen lokale Daten verloren. Keine echten Finanzdaten oder Backups ins **öffentliche** GitHub-Repository hochladen.
+**Vor der Aktualisierung**: In Version 0.7 bitte über „Mehr“ → „Daten & Einstellungen“ → „Alle Haushalte als JSON sichern“ exportieren. Danach die **sieben Dateien** dieses ZIPs im selben GitHub-Pages-Repository ersetzen, bei bestehender Internetverbindung die installierte App schließen und neu öffnen. Bei hartnäckig veraltetem Stand die Pages-Adresse im Safari-Browser mit `?v=080` aufrufen. **Nicht** die Website-Daten löschen – dadurch gehen lokale Daten verloren. Keine echten Finanzdaten oder Backups ins **öffentliche** GitHub-Repository hochladen.
 
 ## Wichtige Grenzen
 
@@ -33,3 +33,13 @@ Die Daten liegen weiterhin **lokal im Browser** unter dem bestehenden Schlüssel
 3. Einen eigenen Materialrechner mit m²-Basis anlegen, berechnen und das Ergebnis als Projekt speichern.
 4. Zum Privathaushalt wechseln und kontrollieren, dass dessen Daten und Dashboard unverändert sind.
 5. JSON-Sicherung exportieren und aufbewahren.
+
+
+## Version 0.8 – Kontoauszug-Import & automatische Abo-Vorschläge
+
+- Privat- und gemeinsame Haushalte: **Konten → Kontoauszug importieren** oder **Planung → Abos erkennen**.
+- CSV-Import aus Bankkontoauszügen mit Datum, Betrag und möglichst Empfänger/Verwendungszweck. Unterstützt gängige Spaltennamen, Semikolon-/Komma-/Tab-Trennung, deutsche und ISO-Daten sowie deutsche Betragsformate. CSV-Daten werden nur im Browser verarbeitet.
+- Vor dem Einlesen muss das richtige Budget-Studio-Konto ausgewählt werden. Eine Vorschau ermöglicht die Prüfung vor Übernahme. Wiederholte Imports derselben identischen Zeilen werden erkannt; manuelle Einträge oder anders formatierte Bankexporte können weiterhin zu Doppelbuchungen führen.
+- Abo-Erkennung: gleicht ähnliche Zahlungspartner, Beträge und monatliche/jährliche Abstände ab. Zeigt ausschließlich **Vorschläge**, die ausdrücklich bestätigt werden müssen. Das bestätigte Abo ist nur ein Kosten-Tracker; keine erneute Buchung.
+- Eine automatische Bankverbindung ist **nicht** integriert. Dazu sind ein sicherer eigener Server, eine Vereinbarung mit einem regulierten Bankdatenanbieter (z.B. finAPI, Tink), eine Freigabe beim Geldinstitut und ein Datenschutz-/Sicherheitskonzept nötig.
+- Vor echten Kontoumsätzen unbedingt JSON-Sicherung erstellen und lokale Speicherung/Datenschutz bedenken. Nicht unterstützte CSV-Formate müssen an die jeweilige Bank angepasst werden. Für Geschäftsimporte keine automatische USt-Zuordnung.

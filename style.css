@@ -91,3 +91,11 @@ body.gold #quick-add{color:#171b1c}body.gold .hero-metric{background:linear-grad
 @media(max-width:800px){.business-banner{padding:23px 20px}.business-banner-icon{font-size:65px}.trade-grid{gap:10px}.trade-card{padding:16px;min-height:163px}.trade-card b{font-size:14px}.trade-check-grid{grid-template-columns:1fr}.picker-trade-grid{grid-template-columns:1fr}.business-kpis .panel{padding:15px}.business-kpis strong{font-size:20px}}
 @media(max-width:370px){.trade-grid{grid-template-columns:1fr}.business-banner strong{font-size:30px}.business-banner-icon{display:none}}
 body.gold .business-banner{background:linear-gradient(125deg,#79633b,#b59a63)}
+
+
+/* 0.8: Banking CSV preview and recurring transaction detection */
+.bank-steps input[type=file]{display:block;max-width:100%;overflow-wrap:anywhere;margin-top:8px;padding:13px;border:1px dashed var(--line);border-radius:13px;background:var(--soft)}
+.bank-steps label{display:block;font-size:13px;color:var(--ink);font-weight:650}.bank-steps select{width:100%;margin:8px 0 14px}
+.bank-summary{font-size:14px;background:var(--soft);border-radius:12px;padding:12px;line-height:1.6}.bank-preview-list{display:grid;gap:0}.bank-preview-row{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;font-size:12px}.bank-preview-row>b{white-space:nowrap}.bank-preview-row span{overflow-wrap:anywhere}.bank-preview-row:last-child{border:0}
+.detected-subscription{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:15px 0}.detected-subscription:last-child{border:0}.detected-subscription>div:first-child{min-width:0;overflow-wrap:anywhere}.detected-subscription .muted{font-size:11px;line-height:1.55;margin-top:5px}.detected-subscription-action{display:grid;gap:8px;text-align:right;justify-items:end;flex-shrink:0}.detected-subscription-action strong{font-size:17px}.detected-subscription-action button{font-size:11px;max-width:150px}
+@media(max-width:440px){.detected-subscription{align-items:stretch;flex-direction:column}.detected-subscription-action{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left}.detected-subscription-action button{max-width:none}.bank-preview-row{font-size:11px}}
