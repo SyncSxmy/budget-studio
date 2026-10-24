@@ -99,3 +99,9 @@ body.gold .business-banner{background:linear-gradient(125deg,#79633b,#b59a63)}
 .bank-summary{font-size:14px;background:var(--soft);border-radius:12px;padding:12px;line-height:1.6}.bank-preview-list{display:grid;gap:0}.bank-preview-row{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;font-size:12px}.bank-preview-row>b{white-space:nowrap}.bank-preview-row span{overflow-wrap:anywhere}.bank-preview-row:last-child{border:0}
 .detected-subscription{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:15px 0}.detected-subscription:last-child{border:0}.detected-subscription>div:first-child{min-width:0;overflow-wrap:anywhere}.detected-subscription .muted{font-size:11px;line-height:1.55;margin-top:5px}.detected-subscription-action{display:grid;gap:8px;text-align:right;justify-items:end;flex-shrink:0}.detected-subscription-action strong{font-size:17px}.detected-subscription-action button{font-size:11px;max-width:150px}
 @media(max-width:440px){.detected-subscription{align-items:stretch;flex-direction:column}.detected-subscription-action{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left}.detected-subscription-action button{max-width:none}.bank-preview-row{font-size:11px}}
+
+/* 0.8.1 bank document import */
+.bank-statement-status{font-size:13px;background:var(--soft);border-radius:12px;padding:12px 14px;line-height:1.55}
+.bank-preview-row small{display:block;margin-top:4px;line-height:1.35;max-width:240px;overflow-wrap:anywhere}
+.bank-steps input[type=file]{font-size:13px;max-width:100%;background:var(--panel)}
+.bank-preview-list{max-height:480px;overflow:auto}

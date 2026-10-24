@@ -1,3 +1,23 @@
+# Budget Studio 0.8.1 – PDF- und Foto-Kontoauszüge (Testversion)
+
+## Neuer Kontoauszug-Import
+
+- Unter **Konten → Kontoauszug importieren** können CSV, PDF, JPG und PNG gewählt werden.
+- **PDF.js** liest textbasierte PDFs im Browser. PDF-Scans und Fotos werden per **Tesseract.js OCR** ausgelesen, falls die Browser-Libraries geladen werden können. Der erste Abruf benötigt **Internet**.
+- Achtung: Die Bibliotheken werden in diesem Prototyp über externe CDNs geladen (nicht selbst gehostet). Es erfolgt eine Zustimmungsmeldung vor dem Abruf. Die Datei wird vom App-Code lokal ausgewertet und nicht an einen OCR-Webdienst hochgeladen. Externen Code und Bankdaten trotzdem nur verwenden, wenn du dem Risiko vertraust. Für eine Veröffentlichungsfassung sollten die geprüften Bibliotheken mit ausgeliefert und eine umfassende Sicherheitsprüfung durchgeführt werden.
+- Dokumentprüfung: Kontoauszug-typische Merkmale müssen vorhanden sein, insbesondere Bank-/Kontobezug und Buchungsangaben. Ohne ausreichend Merkmale erfolgt kein Import.
+- Buchungen aus PDFs/Fotos müssen **Datum, Betrag und klar erkennbare Zuordnung Soll/Haben** besitzen. Unsichere Zeilen werden verworfen, nicht erraten. Nach dem Lesen erscheint eine Vorschau, die explizit bestätigt werden muss.
+- Eingescannte Dokumente, schlechte Fotos und komplexe Sparkassen-Layouts können weiterhin scheitern. Dieser Prototyp ist **kein verlässlicher Universal-PDF-Konverter**. Bitte jede Buchung mit dem Original vergleichen. Ein echtes persönliches PDF wurde nicht getestet.
+- Limits: CSV 3 MB, PDF 12 MB / 12 Seiten, Fotos 8 MB.
+- Eine echte automatische Bankverbindung ist weiterhin **nicht** enthalten.
+- Alle bisherigen Haushalte, Buchungen und Einstellungen werden beibehalten; `budget-studio-v2` wird nicht ersetzt.
+
+## Update
+
+Vorher alle Haushalte als JSON exportieren. Dann die sieben Dateien aus der ZIP in dein bisheriges GitHub-Pages-Repository hochladen und bestehende Dateien ersetzen. Auf dem iPhone zunächst bei Internetverbindung neu laden, gegebenenfalls `?v=081` an die Pages-URL anhängen. **Website-Daten nicht löschen**. Bank-PDFs, Fotos und JSON-Backups niemals ins öffentliche GitHub-Repository laden.
+
+---
+
 # Budget Studio 0.8 – Banking-Vorbereitung und Abo-Erkennung (lokale Testversion)
 
 **Neuer Schwerpunkt:** Jeder Geschäftshaushalt hat ein eigenes Dashboard und individuell ausgewählte Gewerke, ohne die privaten und gemeinsamen Finanzhaushalte zu verändern.

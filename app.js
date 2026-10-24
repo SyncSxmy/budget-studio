@@ -199,7 +199,7 @@ function transactions(){
 const vat=businessHousehold()?`<div class="tax-heading">Steueraufteilung für Geschäfts­buchungen</div>${options('entryMode','Eingegebener Betrag ist',[['gross','Brutto (inkl. USt)'],['net','Netto (ohne USt)']])}${options('vatRate','Umsatzsteuersatz',[['19','19 %'],['7','7 %'],['0','0 %']])}<div id="tax-preview" class="tax-preview" aria-live="polite">Netto, Steueranteil und Brutto werden bei Eingabe berechnet.</div>`:'';
 return `<h2>Buchungen</h2>${businessHousehold()?'<p class="muted">Für Geschäftsbuchungen wählst du, ob du netto oder brutto eingibst. Kontostände und Cashflow berücksichtigen immer den tatsächlich gebuchten Bruttobetrag.</p>':''}${form(options('type','Art',[['expense','Ausgabe'],['income','Einnahme']])+field('amount','Betrag (€)','number','min="0.01" step="0.01"')+vat+field('date','Datum','date',`value="${dateToday()}"`)+field('category','Kategorie','text','maxlength="60"')+options('accountId','Konto',state.accounts.map(a=>[a.id,a.name]))+field('note','Beschreibung','text','maxlength="120"'),'transactions','Buchung hinzufügen')}${list([...state.transactions].sort((a,b)=>b.date.localeCompare(a.date)),t=>`<div class="item row"><div><b>${esc(t.category)}</b><div class="muted">${esc(t.date)} · ${esc(t.note)} · ${esc(state.accounts.find(a=>a.id===t.accountId)?.name||'Gelöschtes Konto')}</div>${businessHousehold()?`<div class="muted tax-line">${Number.isFinite(t.netAmount)&&Number.isFinite(t.vatAmount)?`Netto ${eur(t.netAmount)} · USt ${t.vatRate}%: ${eur(t.vatAmount)} · Brutto ${eur(t.amount)}`:'Steueraufteilung nicht hinterlegt'}</div>`:''}</div><div><b class="${t.type==='income'?'positive':'negative'}">${t.type==='income'?'+':'−'}${eur(t.amount)}</b> ${removeButton('transactions',t.id)}</div></div>`)}`}
 
-function accounts(){return `<h2>Konten</h2><div class="panel bank-info"><b>Bankkonten &amp; Kreditkarten</b><p class="muted">Buchungen aus Girokonten und Kreditkarten kannst du zunächst per CSV-Kontoauszug übernehmen. Die direkte Bankfreigabe kommt später mit einem sicheren Open-Banking-Dienst.</p><button data-open-view="bankImport" class="primary" type="button">Kontoauszug importieren</button></div>${form(field('name','Kontoname','text','maxlength="60"')+field('opening','Anfangsbestand (€)','number','step="0.01" value="0"'),'accounts','Konto hinzufügen')}${list(state.accounts,a=>`<div class="item row"><div><b>${esc(a.name)}</b><div class="muted">Aktueller Saldo</div></div><div><b>${eur(accountBalance(a.id))}</b> ${state.accounts.length>1?removeButton('accounts',a.id):''}</div></div>`)}`}
+function accounts(){return `<h2>Konten</h2><div class="panel bank-info"><b>Bankkonten &amp; Kreditkarten</b><p class="muted">Buchungen aus Girokonten und Kreditkarten kannst du zunächst per Kontoauszug übernehmen. Die direkte Bankfreigabe kommt später mit einem sicheren Open-Banking-Dienst.</p><button data-open-view="bankImport" class="primary" type="button">Kontoauszug importieren</button></div>${form(field('name','Kontoname','text','maxlength="60"')+field('opening','Anfangsbestand (€)','number','step="0.01" value="0"'),'accounts','Konto hinzufügen')}${list(state.accounts,a=>`<div class="item row"><div><b>${esc(a.name)}</b><div class="muted">Aktueller Saldo</div></div><div><b>${eur(accountBalance(a.id))}</b> ${state.accounts.length>1?removeButton('accounts',a.id):''}</div></div>`)}`}
 function goals(){return `<h2>Sparziele</h2>${form(field('name','Sparziel','text','maxlength="60"')+field('target','Zielbetrag (€)','number','min="0.01" step="0.01"')+field('saved','Bereits gespart (€)','number','min="0" step="0.01" value="0"'),'goals','Sparziel hinzufügen')}${list(state.goals,g=>{const p=Math.min(100,Math.max(0,100*money(g.saved)/money(g.target)));return `<div class="item"><div class="row"><b>${esc(g.name)}</b>${removeButton('goals',g.id)}</div><p>${eur(g.saved)} von ${eur(g.target)} · ${p.toFixed(0)} %</p><div class="bar"><div style="width:${p}%"></div></div></div>`})}<p class="muted">Sparziele werden vorerst manuell gepflegt und nicht automatisch vom Kontostand abgezogen.</p>`}
 function debts(){return `<h2>Schulden</h2>${form(field('name','Bezeichnung','text','maxlength="60"')+field('balance','Restschuld (€)','number','min="0" step="0.01"')+field('payment','Monatliche Rate (€)','number','min="0" step="0.01"'),'debts','Schuld hinzufügen')}${list(state.debts,d=>`<div class="item row"><div><b>${esc(d.name)}</b><div class="muted">Monatliche Rate ${eur(d.payment)}</div></div><div><b>${eur(d.balance)}</b> ${removeButton('debts',d.id)}</div></div>`)}<p class="muted">Raten und Restschuld werden vorerst manuell gepflegt; keine Zinsberechnung.</p>`}
 function subscriptions(){return `<h2>Abonnements</h2>${form(field('name','Abo-Name','text','maxlength="60"')+field('amount','Betrag je Zahlung (€)','number','min="0.01" step="0.01"')+options('frequency','Zahlungsintervall',[['monthly','Monatlich'],['yearly','Jährlich']]),'subscriptions','Abo hinzufügen')}${list(state.subscriptions,s=>`<div class="item row"><div><b>${esc(s.name)}</b><div class="muted">${s.frequency==='yearly'?'Jährlich':'Monatlich'} · Jahreskosten ${eur(money(s.amount)*(s.frequency==='yearly'?1:12))}</div></div><div><b>${eur(s.amount)}</b> ${removeButton('subscriptions',s.id)}</div></div>`)}<p class="muted">Abos werden nicht automatisch als Buchung eingetragen.</p>`}
@@ -225,8 +225,8 @@ function payments(){
  return `<div class="heading"><div><small>ALLE REGELMÄSSIGEN KOSTEN</small><h2>Abos &amp; Fixkosten</h2><p class="muted">Behalte Verträge und automatische Zahlungen gemeinsam im Blick.</p></div></div><div class="notice-panel"><b>Wichtig:</b> Ein Abo ist nur eine Kostenübersicht. Für eine automatische Buchung musst du die Zahlung bei Fixkosten eintragen. Erkannte Abos sind zunächst nur eine Übersicht und erzeugen keine zusätzlichen Kontobuchungen. Bei laufendem Kontoauszug-Import bitte dieselbe Abbuchung nicht nochmals als automatische Fixkosten buchen.</div>${fixed}<div class="subsection-separator"></div>${abo}`;
 }
 function planning(){return businessHousehold()?toolsHub():financePlanning()}
-function financePlanning(){return `<div class="heading"><div><small>DEINE FINANZPLANUNG</small><h2>Planung</h2><p class="muted">Alles Wichtige für deine nächsten Monate.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="subscriptionFinder"><span class="feature-icon">✦</span><span><b>Abos automatisch erkennen</b><small>Regelmäßige Abbuchungen analysieren</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="bankImport"><span class="feature-icon">⇩</span><span><b>Kontoauszug importieren</b><small>CSV von Girokonto oder Kreditkarte</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="payments"><span class="feature-icon">↻</span><span><b>Abos &amp; Fixkosten</b><small>Regelmäßige Zahlungen zentral</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="calendar"><span class="feature-icon">▦</span><span><b>Finanzkalender</b><small>Zahlungen &amp; Fälligkeiten</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="goals"><span class="feature-icon">◎</span><span><b>Sparziele</b><small>Deine Ziele im Blick</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="debts"><span class="feature-icon">▤</span><span><b>Schulden</b><small>Raten und Restschulden</small></span><span class="feature-arrow">›</span></button></div>`}
-function more(){return `<div class="heading"><div><small>DEIN BUDGET STUDIO</small><h2>Mehr</h2><p class="muted">Verwalte deine Haushalte und Daten.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="settings"><span class="feature-icon">⚙</span><span><b>Daten &amp; Einstellungen</b><small>Haushalte, Sicherungen, Design</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="${businessHousehold()?'financePlanning':'planning'}"><span class="feature-icon">▦</span><span><b>${businessHousehold()?'Finanzplanung':'Planung'}</b><small>Fixkosten, Kalender, Ziele</small></span><span class="feature-arrow">›</span></button></div>${businessHousehold()?`<div class="feature-grid"><button class="feature-link" data-open-view="planning"><span class="feature-icon">▥</span><span><b>Gewerke &amp; Material</b><small>Rechner und Projekte</small></span><span class="feature-arrow">›</span></button></div><div class="panel"><b>Netto &amp; Brutto</b><p class="muted">Für Buchungen im Geschäftshaushalt kannst du Netto/Brutto und 0 %, 7 % oder 19 % auswählen. Die Monatsübersicht zeigt rechnerische Steueranteile.</p></div>`: ''}<div class="panel bank-info"><b>Bank &amp; Abo-Erkennung</b><p class="muted">CSV-Kontoauszüge können lokal importiert werden. Eine echte Bankverbindung benötigt einen Open-Banking-Dienst und einen geschützten Server. Aktuell werden keine Umsätze automatisch abgerufen.</p><button type="button" data-open-view="bankImport">Kontoauszug importieren</button></div>`}
+function financePlanning(){return `<div class="heading"><div><small>DEINE FINANZPLANUNG</small><h2>Planung</h2><p class="muted">Alles Wichtige für deine nächsten Monate.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="subscriptionFinder"><span class="feature-icon">✦</span><span><b>Abos automatisch erkennen</b><small>Regelmäßige Abbuchungen analysieren</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="bankImport"><span class="feature-icon">⇩</span><span><b>Kontoauszug importieren</b><small>CSV oder PDF von Girokonto oder Kreditkarte</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="payments"><span class="feature-icon">↻</span><span><b>Abos &amp; Fixkosten</b><small>Regelmäßige Zahlungen zentral</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="calendar"><span class="feature-icon">▦</span><span><b>Finanzkalender</b><small>Zahlungen &amp; Fälligkeiten</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="goals"><span class="feature-icon">◎</span><span><b>Sparziele</b><small>Deine Ziele im Blick</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="debts"><span class="feature-icon">▤</span><span><b>Schulden</b><small>Raten und Restschulden</small></span><span class="feature-arrow">›</span></button></div>`}
+function more(){return `<div class="heading"><div><small>DEIN BUDGET STUDIO</small><h2>Mehr</h2><p class="muted">Verwalte deine Haushalte und Daten.</p></div></div><div class="feature-grid"><button class="feature-link" data-open-view="settings"><span class="feature-icon">⚙</span><span><b>Daten &amp; Einstellungen</b><small>Haushalte, Sicherungen, Design</small></span><span class="feature-arrow">›</span></button><button class="feature-link" data-open-view="${businessHousehold()?'financePlanning':'planning'}"><span class="feature-icon">▦</span><span><b>${businessHousehold()?'Finanzplanung':'Planung'}</b><small>Fixkosten, Kalender, Ziele</small></span><span class="feature-arrow">›</span></button></div>${businessHousehold()?`<div class="feature-grid"><button class="feature-link" data-open-view="planning"><span class="feature-icon">▥</span><span><b>Gewerke &amp; Material</b><small>Rechner und Projekte</small></span><span class="feature-arrow">›</span></button></div><div class="panel"><b>Netto &amp; Brutto</b><p class="muted">Für Buchungen im Geschäftshaushalt kannst du Netto/Brutto und 0 %, 7 % oder 19 % auswählen. Die Monatsübersicht zeigt rechnerische Steueranteile.</p></div>`: ''}<div class="panel bank-info"><b>Bank &amp; Abo-Erkennung</b><p class="muted">CSV-, PDF- und Bild-Kontoauszüge können geprüft und importiert werden. Eine echte Bankverbindung benötigt einen Open-Banking-Dienst und einen geschützten Server. Aktuell werden keine Umsätze automatisch abgerufen.</p><button type="button" data-open-view="bankImport">Kontoauszug importieren</button></div>`}
 function planningBack(){return `<button class="planning-back" data-open-view="${businessHousehold()?'financePlanning':'planning'}">‹ Zur Finanzplanung</button>`}
 function calendar(){const m=selectedMonth,actual=state.transactions.filter(t=>t.date.slice(0,7)===m),future=[];const end=m+'-31';
  for(const r of state.recurring||[]){let date=r.nextDate,guard=0;while(isDate(date)&&date<=end&&guard++<36){if(date.slice(0,7)===m)future.push({date,name:r.name,type:r.type,amount:r.amount});const next=nextRecurringDate(r,date);if(next<=date)break;date=next;}}
@@ -261,15 +261,16 @@ return ['sage','rose','gold'].includes(d.theme)
  * Imported records are real account movements; detected subscriptions are display-only.
  */
 function bankImport(){
- const blocked=businessHousehold()?'<div class="notice-panel">Auch für Geschäftskonten lassen sich CSV-Dateien importieren. Die automatische Abo-Erkennung wird zunächst für private und gemeinsame Haushalte angeboten. Für Geschäftsbuchungen wird keine automatische Umsatzsteuer-Aufteilung angenommen.</div>':'';
+ const blocked=businessHousehold()?'<div class="notice-panel">Auch für Geschäftskonten lassen sich Kontoauszüge importieren. Die automatische Abo-Erkennung wird zunächst für private und gemeinsame Haushalte angeboten. Für Geschäftsbuchungen wird keine automatische Umsatzsteuer-Aufteilung angenommen.</div>':'';
  const draft=bankImportDraft;
- return `<div class="heading"><div><small>BANKDATEN · LOKALER IMPORT</small><h2>Kontoauszug importieren</h2><p class="muted">Ausgewählte CSV-Dateien werden nur auf diesem Gerät ausgewertet. Es werden keine Bank-Passwörter benötigt.</p></div></div>${blocked}
- <div class="panel stack bank-steps"><h3>1. CSV-Datei deiner Bank auswählen</h3><p class="muted">Lade einen CSV-Kontoauszug aus deinem Online-Banking herunter. Typische Spalten: Buchungstag / Datum, Betrag, Verwendungszweck, Empfänger. Nicht alle Bankformate sind bereits unterstützt.</p>
+ return `<div class="heading"><div><small>BANKDATEN · IMPORT</small><h2>Kontoauszug importieren</h2><p class="muted">CSV, PDF oder Foto auswählen. Die App prüft zunächst, ob ein lesbarer Kontoauszug vorliegt.</p></div></div>${blocked}
+ <div class="panel stack bank-steps"><h3>1. Datei auswählen</h3><p class="muted">Unterstützt: <b>CSV, textbasierte PDF-Dateien und JPG/PNG-Fotos</b> (für Fotos und eingescannte PDF-Seiten ist Texterkennung nötig). Für die PDF- und Foto-Erkennung werden bei Bedarf externe Open-Source-Bibliotheken geladen. Dafür ist beim ersten Mal Internet erforderlich; das Dokument wird im Browser verarbeitet und von unserem Code nicht hochgeladen. Verwende die Testversion noch nicht für besonders vertrauliche Bankdaten.</p>
  <label>Welchem Konto gehören die Buchungen? <select id="bank-target-account">${state.accounts.map(a=>`<option value="${esc(a.id)}" ${draft?.accountId===a.id?'selected':''}>${esc(a.name)}</option>`).join('')}</select></label>
- <label>CSV-Kontoauszug <input id="bank-csv-file" type="file" accept=".csv,text/csv,text/plain"></label>
- <p class="muted">Wichtig: Anfangsbestand im Konto so wählen, dass er vor den importierten Buchungen liegt. Sonst wird der Saldo doppelt berechnet.</p></div>
- ${draft?`<div class="panel stack" id="bank-import-preview"><h3>2. Buchungen prüfen</h3><p class="bank-summary"><strong>${draft.ready.length}</strong> neue Buchung(en) · ${draft.duplicates} bereits vorhanden · ${draft.invalid} nicht lesbar</p><p class="muted">Aus Datei „${esc(draft.fileName)}“ · Konto ${esc(state.accounts.find(a=>a.id===draft.accountId)?.name||'–')}</p>${draft.warnings.length?`<div class="notice-panel">${draft.warnings.map(esc).join(' · ')}</div>`:''}<div class="bank-preview-list">${draft.ready.slice(0,8).map(r=>`<div class="bank-preview-row"><span>${esc(r.date)}<br><b>${esc(r.merchant||r.note)}</b></span><b class="${r.type==='income'?'positive':'negative'}">${r.type==='income'?'+':'−'}${eur(r.amount)}</b></div>`).join('')||'<p class="muted">Keine neuen Buchungen gefunden.</p>'}</div><div class="settings-actions"><button type="button" class="primary" id="bank-import-commit" ${draft.ready.length?'':'disabled'}>Neue Buchungen übernehmen</button><button type="button" id="bank-import-cancel">Verwerfen</button></div></div>`:''}
- <div class="panel bank-info"><b>Direkte Bankverbindung – noch nicht aktiv</b><p class="muted">Später kann hier nach sicherer Bankfreigabe ein Konto verbunden werden. Dafür benötigen wir einen Open-Banking-Anbieter wie finAPI oder Tink und einen geschützten Server. Deine Bank-PIN darfst du hier niemals eingeben.</p></div>`;
+ <label>Kontoauszug / Foto <input id="bank-csv-file" type="file" accept=".csv,.pdf,.jpg,.jpeg,.png,text/csv,application/pdf,image/jpeg,image/png"></label>
+ <p id="bank-import-status" class="muted" role="status" aria-live="polite">PDF: maximal 12 Seiten / 12 MB · Fotos: maximal 8 MB · CSV: maximal 3 MB.</p>
+ <p class="muted">Anfangsbestand des Kontos muss vor den importierten Buchungen liegen. Bereits eingetragene Umsätze können sonst doppelt gezählt werden.</p></div>
+ ${draft?`<div class="panel stack" id="bank-import-preview"><h3>2. Buchungen prüfen</h3><div class="bank-statement-status"><b>Erkennung:</b> ${esc(draft.documentLabel||'CSV-Tabelle')} · ${esc(draft.ready.length+' neue Buchung(en)')}</div><p class="bank-summary"><strong>${draft.ready.length}</strong> neu · ${draft.duplicates} bereits importiert · ${draft.invalid} nicht eindeutig lesbar</p><p class="muted">Datei „${esc(draft.fileName)}“ · Konto ${esc(state.accounts.find(a=>a.id===draft.accountId)?.name||'–')}</p>${draft.warnings.length?`<div class="notice-panel">${draft.warnings.map(esc).join(' · ')}</div>`:''}<div class="bank-preview-list">${draft.ready.slice(0,20).map(r=>`<div class="bank-preview-row"><span>${esc(r.date)}<br><b>${esc(r.merchant||r.note)}</b>${r.note&&r.note!==r.merchant?`<small class="muted">${esc(r.note.slice(0,80))}</small>`:''}</span><b class="${r.type==='income'?'positive':'negative'}">${r.type==='income'?'+':'−'}${eur(r.amount)}</b></div>`).join('')||'<p class="muted">Keine neuen Buchungen gefunden.</p>'}</div><p class="muted"><b>Bitte vergleichen:</b> Datum, Vorzeichen, Beträge und Empfänger mit dem Original. ${draft.ready.length>20?'Hier werden nur die ersten 20 Buchungen angezeigt. Bei vielen Buchungen bitte kleinere Zeiträume importieren.':''}</p><div class="settings-actions"><button type="button" class="primary" id="bank-import-commit" ${draft.ready.length?'':'disabled'}>Geprüfte Buchungen übernehmen</button><button type="button" id="bank-import-cancel">Verwerfen</button></div></div>`:''}
+ <div class="panel bank-info"><b>Direkte Bankverbindung – noch nicht aktiv</b><p class="muted">Für echte Bankverbindungen sind ein Open-Banking-Anbieter, ein geschützter Server und Bankfreigaben erforderlich. Hier keine PIN oder TAN eingeben.</p></div>`;
 }
 function csvParse(text,separator){
  const out=[];let row=[],cell='',quote=false;
@@ -344,17 +345,176 @@ function parsedBankCSV(text,accountId){
  if(!ready.length&&!duplicates)warnings.push('Prüfe, ob deine Bank ein anderes CSV-Format verwendet.');
  return {ready,duplicates,invalid,warnings};
 }
-async function onBankCSV(input){
+// PDF / image recognition for the optional document importer. Only locally selected files
+// are handed to PDF.js / Tesseract in the browser; no statement is sent to an OCR API.
+let bankFileBusy=false,approvedBankLibraries=false;
+const PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const TESS_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+function importProgress(message){const el=document.querySelector('#bank-import-status');if(el)el.textContent=message}
+function loadBankScript(url,ready){
+ if(ready())return Promise.resolve();
+ return new Promise((resolve,reject)=>{const script=document.createElement('script');let settled=false;const timer=setTimeout(()=>finish(Error('Bibliothek nicht erreichbar (Zeitüberschreitung). Bitte Internetverbindung prüfen.')),20000);function finish(error){if(settled)return;settled=true;clearTimeout(timer);if(error){script.remove();reject(error)}else resolve()}script.src=url;script.async=true;script.crossOrigin='anonymous';script.onload=()=>ready()?finish():finish(Error('Die Texterkennung konnte nicht gestartet werden.'));script.onerror=()=>finish(Error('Bibliothek nicht erreichbar. Bitte Internetverbindung prüfen und erneut versuchen.'));document.head.appendChild(script)});
+}
+function statementCheck(text){
+ const normalized=String(text).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const title=/konto\s*auszug|kontoumsatze|umsatzubersicht|umsatzanzeige|bank statement/.test(normalized);
+ const bank=/(sparkasse|bank|girokonto|kreditinstitut|iban|konto\s*nr)/.test(normalized);
+ const finance=/(kontostand|saldo|buchung|lastschrift|gutschrift|betrag|wertstellung)/.test(normalized);
+ const dates=(text.match(/\b\d{1,2}[.\/-]\d{1,2}(?:[.\/-]\d{2,4})?\b/g)||[]).length;
+ return {isStatement:bank&&finance&&(title||(/kontostand|saldo/i.test(normalized)&&dates>=3)),title,bank,finance,dates};
+}
+function statementYear(text){
+ const patterns=[/konto\s*auszug[^\n]{0,80}?(20\d{2})/ig,/\b(?:vom|bis|zeitraum|stand)\s*:?\s*\d{1,2}\.\d{1,2}\.(20\d{2})/ig,/\b\d{1,2}\.\d{1,2}\.(20\d{2})\b/g];
+ for(const p of patterns){const m=p.exec(text);if(m)return Number(m[1])}
+ return null;
+}
+function pdfTextLines(content){
+ const items=content.items.filter(x=>typeof x.str==='string'&&x.str.trim()).map(x=>({text:x.str.trim(),x:Number(x.transform?.[4]||0),y:Number(x.transform?.[5]||0)}));
+ items.sort((a,b)=>b.y-a.y||a.x-b.x);
+ const lines=[];
+ for(const item of items){const last=lines[lines.length-1];if(last&&Math.abs(last.y-item.y)<3){last.items.push(item)}else lines.push({y:item.y,items:[item]})}
+ return lines.map(r=>{r.items.sort((a,b)=>a.x-b.x);return {text:r.items.map(x=>x.text).join(' ').replace(/\s+/g,' ').trim(),items:r.items}}).filter(x=>x.text);
+}
+function signedAmount(value){
+ const t=String(value).trim().replace(/[−–—]/g,'-'),n=parseBankAmount(t.replace(/([+\-SH])\s*$/i,'').replace(/\s*(?:EUR|€)\s*$/i,''));
+ if(n===null||n===0)return null;
+ const trailing=t.match(/([+\-SH])\s*(?:EUR|€)?\s*$/i);const lead=t.trim()[0];
+ const rawSign=trailing?trailing[1].toUpperCase():lead==='-'?'-':lead==='+'?'+':null;const sign=rawSign==='S'?'-':rawSign==='H'?'+':rawSign;
+ return {amount:Math.abs(n),type:sign==='-'?'expense':sign==='+'?'income':null};
+}
+function parseStatementRows(lines,accountId,year){
+ const ready=[],warnings=[],seen=new Set(state.transactions.filter(t=>t.accountId===accountId).map(t=>t.importKey).filter(Boolean));
+ let duplicates=0,invalid=0,unsure=0,skipped=0;
+ const textLines=lines.map(r=>typeof r==='string'?r:r.text);
+ const compact=textLines.join('\n');
+ if(!statementCheck(compact).isStatement)throw Error('Keine eindeutigen Kontoauszug-Merkmale erkannt. Es wurden keine Buchungen importiert.');
+ const resolvedYear=year||statementYear(compact);
+ const dateRegex=/^\s*(\d{1,2}[.\/-]\d{1,2}(?:[.\/-]\d{2,4})?|20\d{2}-\d{2}-\d{2})(?=\s|$|[.,;])/;
+ const moneyRegex=/(?:[+\-−–]\s*)?(?:\d{1,3}(?:\.\d{3})*|\d+),\d{2}\s*(?:[+\-−–]|[SH](?![a-z]))?\s*(?:EUR|€)?/gi;
+ // Account statements may have separate debit/credit amount columns with no +/- sign.
+ // Such values are NOT guessed: require a signed value or an unambiguous column.
+ const header=lines.find(r=>/\b(?:soll|belastung)\b/i.test(r.text)&&/\b(?:haben|gutschrift)\b/i.test(r.text));
+ const headingItems=header&&header.items||[];
+ const soll=headingItems.find(x=>/^(betrag\s*)?(soll|belastung)/i.test(x.text));
+ const haben=headingItems.find(x=>/^(betrag\s*)?(haben|gutschrift)/i.test(x.text));
+ let current=null;
+ function flush(){
+  if(!current)return;
+  const r=current;current=null;
+  if(/\b(kontostand|anfangssaldo|endsaldo|alter saldo|neuer saldo|saldo vortrag|uebertrag|übertrag|aktueller kontostand|verfügbar|verfugbar)\b/i.test(r.description)){skipped++;return}
+  if(!r.date||r.amount===null||!r.type){invalid++;return}
+  const merchant=String(r.description||'Kontoauszug-Buchung').slice(0,80).trim();
+  const note=String(r.description||merchant).slice(0,120).trim();
+  const normalized=normalizeMerchant(merchant);
+  const key=hashImportKey([accountId,r.date,(r.type==='expense'?-1:1)*r.amount,normalized,merchant,'statement']);
+  if(seen.has(key)){duplicates++;return}seen.add(key);
+  ready.push({date:r.date,type:r.type,amount:r.amount,accountId,category:'Unkategorisiert',note,merchant,merchantKey:normalized,importKey:key,importedFrom:'document'});
+ }
+ for(let i=0;i<textLines.length;i++){
+  const t=textLines[i];const dateMatch=t.match(dateRegex);
+  if(dateMatch){
+   flush();let found=dateMatch[1];
+   if(/^\d{1,2}[.\/-]\d{1,2}$/.test(found)){if(!resolvedYear){unsure++;continue}found+='.'+resolvedYear}
+   const date=parseBankDate(found);if(!date){unsure++;continue}
+   // A date row might itself be a balance, a footer or an empty column header.
+   const tail=t.slice(dateMatch[0].length).trim();
+   const amounts=[...tail.matchAll(moneyRegex)];let chosen=null;
+   if(amounts.length){const hit=amounts[amounts.length-1];let signed=signedAmount(hit[0]);
+    if(signed&&signed.type===null&&soll&&haben&&typeof lines[i]!=='string'){
+     const lastItem=lines[i].items.filter(x=>/\d+,\d{2}/.test(x.text)).at(-1);if(lastItem){const d1=Math.abs(lastItem.x-soll.x),d2=Math.abs(lastItem.x-haben.x);if(Math.abs(d1-d2)>12)signed.type=d1<d2?'expense':'income'}
+    }
+    if(signed&&signed.type)chosen=signed;
+   }
+   const description=tail.replace(moneyRegex,' ').replace(/^(?:\d{1,2}[.\/-]\d{1,2}(?:[.\/-]\d{2,4})?)\s*/,'').replace(/\s+/g,' ').trim();
+   current={date,description,amount:chosen?.amount??null,type:chosen?.type??null};
+   if(!chosen)unsure++;
+  }else if(current){
+   if(/^(?:kontostand|saldo|auszug|blatt|seite|iban|bic|swift|dispositionskredit|aktuell verf[uü]gbar|betrag in eur|ihre sparkasse|mit freundlichen gr[uü]ßen)/i.test(t))continue;
+   // OCR sometimes separates the amount onto the next line.
+   const match=[...t.matchAll(moneyRegex)];
+   if(current.amount===null&&match.length===1){const value=signedAmount(match[0][0]);if(value&&value.type){current.amount=value.amount;current.type=value.type}}
+   if(current.description.length<120&&!(/^\d{1,3}(?:\.\d{3})*,\d{2}\s*[+-]?$/.test(t.trim())))current.description=(''+current.description+' '+t).trim().slice(0,120);
+  }
+ }
+ flush();
+ if(!ready.length&&duplicates)return {ready:[],duplicates,invalid:invalid+unsure,warnings:['Diese Buchungen wurden bereits importiert.']};
+ if(!ready.length&&unsure)throw Error('Kontoauszug erkannt, aber die Beträge/Vorzeichen waren nicht eindeutig lesbar. Es wird nichts übernommen. Bitte CSV-Export oder eine besser lesbare PDF-Datei verwenden.');
+ if(!ready.length)throw Error('Kontoauszug erkannt, jedoch keine eindeutig zuordenbaren Buchungen gefunden.');
+ if(unsure)warnings.push(`${unsure} Zeile(n) ohne eindeutiges Vorzeichen bzw. Jahresdatum nicht übernommen`);
+ if(skipped)warnings.push(`${skipped} Kontostandszeile(n) ausgeschlossen`);
+ if(invalid)warnings.push(`${invalid} unvollständige Zeile(n) ausgelassen`);
+ warnings.push('Automatische PDF-/Bildauswertung: Datum, Betrag und Vorzeichen unbedingt mit dem Original vergleichen.');
+ return {ready,duplicates,invalid:invalid+unsure,warnings};
+}
+async function ocrCanvas(canvas,worker){const result=await worker.recognize(canvas);return String(result.data?.text||'')}
+async function makeOCRWorker(){
+ await loadBankScript(TESS_URL,()=>!!window.Tesseract);
+ if(!window.Tesseract?.createWorker)throw Error('Texterkennung auf diesem Gerät nicht verfügbar.');
+ return window.Tesseract.createWorker('deu+eng',1,{logger:m=>{if(m.status==='recognizing text')importProgress('Text wird erkannt: '+Math.round((m.progress||0)*100)+' %')}});
+}
+async function readImageStatement(file){
+ const bitmap=await createImageBitmap(file);try{
+  const scale=Math.min(1,2200/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  importProgress('Bild wird per OCR erkannt …');const worker=await makeOCRWorker();let content;try{content=await ocrCanvas(canvas,worker)}finally{await worker.terminate()}
+  return {lines:content.split(/\r?\n/).map(text=>({text:text.trim()})).filter(x=>x.text),raw:content,label:'Foto / OCR'};
+ }finally{bitmap.close?.()}
+}
+async function readPdfStatement(file){
+ await loadBankScript(PDFJS_URL,()=>!!window.pdfjsLib);window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER;
+ const bytes=await file.arrayBuffer();const pdf=await window.pdfjsLib.getDocument({data:bytes,isEvalSupported:false}).promise;
+ try{
+  if(pdf.numPages>12)throw Error('PDF enthält mehr als 12 Seiten. Bitte einen kürzeren Zeitraum exportieren.');
+  const result=[];let worker=null,ocrUsed=false;
+  for(let p=1;p<=pdf.numPages;p++){
+   importProgress('PDF wird gelesen: Seite '+p+' von '+pdf.numPages);
+   const page=await pdf.getPage(p);const content=await page.getTextContent();let lines=pdfTextLines(content);
+   if(lines.map(x=>x.text).join(' ').trim().length<55){
+    if(!worker)worker=await makeOCRWorker();ocrUsed=true;
+    const viewport=page.getViewport({scale:2});const scale=Math.min(1,2200/Math.max(viewport.width,viewport.height));const finalView=page.getViewport({scale:2*scale});
+    const canvas=document.createElement('canvas');canvas.width=Math.ceil(finalView.width);canvas.height=Math.ceil(finalView.height);
+    await page.render({canvasContext:canvas.getContext('2d',{willReadFrequently:true}),viewport:finalView}).promise;
+    const text=await ocrCanvas(canvas,worker);canvas.width=1;canvas.height=1;
+    lines=text.split(/\r?\n/).map(text=>({text:text.trim()})).filter(x=>x.text);
+   }
+   result.push(...lines);
+  }
+  if(worker)await worker.terminate();
+  return {lines:result,raw:result.map(r=>r.text).join('\n'),label:ocrUsed?'PDF / teilweise OCR':'Text-PDF'};
+ }finally{await pdf.destroy()}
+}
+async function onBankFile(input){
+ if(bankFileBusy)return;
  const file=input.files?.[0];if(!file)return;
  const accountId=app.querySelector('#bank-target-account')?.value;
  if(!state.accounts.some(a=>a.id===accountId))return alert('Bitte ein gültiges Konto auswählen.');
- if(file.size>3_000_000)return alert('Die CSV-Datei ist zu groß (maximal 3 MB).');
+ const ext=(file.name.split('.').pop()||'').toLowerCase();if(!['csv','pdf','jpg','jpeg','png'].includes(ext))return alert('Nur CSV, PDF, JPG und PNG werden unterstützt.');
+ const limits={csv:3_000_000,pdf:12_000_000,jpg:8_000_000,jpeg:8_000_000,png:8_000_000};if(!file.size||file.size>limits[ext])return alert('Datei leer oder zu groß. Bitte die angegebenen Größenlimits beachten.');
+ const originalHousehold=workspace.activeId;bankFileBusy=true;bankImportDraft=null;
  try{
-  let raw=await file.arrayBuffer();let decoded=new TextDecoder('utf-8',{fatal:false}).decode(raw);
-  if(decoded.includes('\uFFFD'))decoded=new TextDecoder('windows-1252').decode(raw);
-  const result=parsedBankCSV(decoded,accountId);
-  bankImportDraft={...result,accountId,fileName:file.name.slice(0,120),householdId:workspace.activeId};render();
- }catch(err){bankImportDraft=null;alert('CSV konnte nicht verarbeitet werden: '+(err.message||'Unbekannter Fehler'));render()}
+  const bytes=new Uint8Array(await file.slice(0,8).arrayBuffer());
+  const pdfMagic=bytes[0]===37&&bytes[1]===80&&bytes[2]===68&&bytes[3]===70&&bytes[4]===45;
+  const pngMagic=bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71;
+  const jpgMagic=bytes[0]===255&&bytes[1]===216&&bytes[2]===255;
+  if(ext==='pdf'&&!pdfMagic||ext==='png'&&!pngMagic||['jpg','jpeg'].includes(ext)&&!jpgMagic)throw Error('Dateiendung und Dateiinhalt passen nicht zusammen.');
+  let result,label;
+  if(ext==='csv'){
+   const raw=await file.arrayBuffer();let decoded=new TextDecoder('utf-8').decode(raw);if(decoded.includes('\uFFFD'))decoded=new TextDecoder('windows-1252').decode(raw);
+   result=parsedBankCSV(decoded,accountId);label='CSV-Datei';
+  }else{
+   // User consent before third-party JavaScript loads. Never upload the bank document.
+   if(!approvedBankLibraries){if(!confirm('PDF-/Foto-Erkennung benötigt bei der ersten Nutzung Open-Source-Bibliotheken von externen CDNs (PDF.js / Tesseract). Die Datei wird lokal im Browser ausgewertet, aber extern geladener Code benötigt Vertrauen. Fortfahren?'))return;approvedBankLibraries=true;}
+   importProgress('Kontoauszug wird überprüft …');
+   const doc=ext==='pdf'?await readPdfStatement(file):await readImageStatement(file);
+   if(!statementCheck(doc.raw).isStatement)throw Error('Datei nicht als Kontoauszug erkannt. Weder PDF noch Foto wird importiert.');
+   result=parseStatementRows(doc.lines,accountId,statementYear(doc.raw));label=doc.label;
+  }
+  if(originalHousehold!==workspace.activeId)throw Error('Haushalt hat sich geändert. Bitte Datei erneut auswählen.');
+  const possibleDuplicates=result.ready.filter(r=>state.transactions.some(t=>t.accountId===accountId&&t.date===r.date&&t.type===r.type&&Math.abs(t.amount-r.amount)<0.005&&(normalizeMerchant(t.merchant||t.note||'')===normalizeMerchant(r.merchant||r.note||'')))).length;
+  if(possibleDuplicates)result.warnings.push(`${possibleDuplicates} mögliche Doppelbuchung(en) mit vorhandenen Einträgen. Unbedingt vor Übernahme prüfen!`);
+  bankImportDraft={...result,possibleDuplicates,accountId,fileName:file.name.slice(0,120),householdId:originalHousehold,documentLabel:label};render();
+ }catch(err){bankImportDraft=null;render();alert('Import nicht möglich: '+(err.message||'Unbekannter Fehler'))}
+ finally{bankFileBusy=false;importProgress('Du kannst eine weitere Datei auswählen.');}
 }
 function commitBankImport(){
  const d=bankImportDraft;if(!d||d.householdId!==workspace.activeId||!state.accounts.some(a=>a.id===d.accountId))return alert('Bitte CSV-Datei erneut auswählen.');
@@ -404,7 +564,7 @@ function findSubscriptionCandidates(){
 }
 function subscriptionFinder(){
  const found=findSubscriptionCandidates();
- return `<div class="heading"><div><small>REGELMÄSSIGE ABBUCHUNGEN</small><h2>Abos erkennen</h2><p class="muted">Budget Studio prüft deine erfassten Kontoumsätze auf wiederkehrende Zahlungen.</p></div></div><div class="notice-panel"><b>Nur Vorschläge:</b> Regelmäßige Zahlungen können auch Miete, Einkauf oder Versicherungen sein. Bitte jeden Treffer prüfen. Erst mit „Als Abo übernehmen“ wird er gespeichert. Es wird <b>keine zusätzliche Kontobuchung</b> erzeugt.</div><div class="panel stack"><h3>${found.length} mögliche Abos gefunden</h3>${found.length?found.map(c=>`<div class="detected-subscription"><div><b>${esc(c.merchant)}</b><div class="muted">${c.frequency==='monthly'?'Etwa monatlich':'Etwa jährlich'} · ${c.count} Abbuchungen · zuletzt ${esc(c.lastDate)} · ${c.confidence==='hoch'?'Mehrfach erkannt':'Bitte besonders prüfen'}</div></div><div class="detected-subscription-action"><strong>${eur(c.amount)}</strong><button type="button" class="primary" data-accept-subscription="${esc(c.id)}">Als Abo übernehmen</button></div></div>`).join(''):'<p class="muted">Noch keine ausreichend regelmäßigen Abbuchungen erkannt. Für monatliche Zahlungen werden mindestens zwei passende Zahlungen aus unterschiedlichen Monaten benötigt. Importiere zuerst einen CSV-Kontoauszug mit mehreren Monaten.</p>'}</div><button data-open-view="bankImport">Weitere Kontoumsätze importieren</button><p class="muted">Die Erkennung nutzt ähnliche Händlernamen, Beträge und Zeitabstände. Sie ist eine heuristische Schätzung und kann Abos übersehen oder falsche Vorschläge machen.</p>`;
+ return `<div class="heading"><div><small>REGELMÄSSIGE ABBUCHUNGEN</small><h2>Abos erkennen</h2><p class="muted">Budget Studio prüft deine erfassten Kontoumsätze auf wiederkehrende Zahlungen.</p></div></div><div class="notice-panel"><b>Nur Vorschläge:</b> Regelmäßige Zahlungen können auch Miete, Einkauf oder Versicherungen sein. Bitte jeden Treffer prüfen. Erst mit „Als Abo übernehmen“ wird er gespeichert. Es wird <b>keine zusätzliche Kontobuchung</b> erzeugt.</div><div class="panel stack"><h3>${found.length} mögliche Abos gefunden</h3>${found.length?found.map(c=>`<div class="detected-subscription"><div><b>${esc(c.merchant)}</b><div class="muted">${c.frequency==='monthly'?'Etwa monatlich':'Etwa jährlich'} · ${c.count} Abbuchungen · zuletzt ${esc(c.lastDate)} · ${c.confidence==='hoch'?'Mehrfach erkannt':'Bitte besonders prüfen'}</div></div><div class="detected-subscription-action"><strong>${eur(c.amount)}</strong><button type="button" class="primary" data-accept-subscription="${esc(c.id)}">Als Abo übernehmen</button></div></div>`).join(''):'<p class="muted">Noch keine ausreichend regelmäßigen Abbuchungen erkannt. Für monatliche Zahlungen werden mindestens zwei passende Zahlungen aus unterschiedlichen Monaten benötigt. Importiere mehrere Kontoauszüge oder CSV-Dateien.</p>'}</div><button data-open-view="bankImport">Weitere Kontoumsätze importieren</button><p class="muted">Die Erkennung nutzt ähnliche Händlernamen, Beträge und Zeitabstände. Sie ist eine heuristische Schätzung und kann Abos übersehen oder falsche Vorschläge machen.</p>`;
 }
 function acceptSubscription(id){
  const c=findSubscriptionCandidates().find(x=>x.id===id);if(!c)return alert('Der Vorschlag ist nicht mehr vorhanden.');
@@ -441,7 +601,7 @@ if(b.id==='bank-import-cancel'){bankImportDraft=null;render();return}
 if(b.dataset.acceptSubscription){acceptSubscription(b.dataset.acceptSubscription);return}
 if(b.dataset.openView){setView(b.dataset.openView);return}if(b.dataset.trade){selectedTrade=b.dataset.trade;selectedCalculator=null;pendingCalc=null;setView('calculators');return}if(b.dataset.calc){selectedCalculator=b.dataset.calc;pendingCalc=null;setView('calculator');return}if(b.dataset.customCalc){const calc=customOf().find(c=>c.id===b.dataset.customCalc);if(!calc)return;selectedTrade=calc.trade;selectedCalculator='custom:'+calc.id;pendingCalc=null;setView('calculator');return}if(b.dataset.deleteCustom){const h=household();if(!confirm('Eigenen Rechner löschen? Gespeicherte Projektkalkulationen bleiben erhalten.'))return;const before=h.customCalculators;h.customCalculators=before.filter(c=>c.id!==b.dataset.deleteCustom);if(!save())h.customCalculators=before;selectedCalculator=null;setView('planning');return}if(b.dataset.deleteEstimate){const h=household();if(!confirm('Projektkalkulation löschen?'))return;const before=h.estimates;h.estimates=before.filter(x=>x.id!==b.dataset.deleteEstimate);if(!save())h.estimates=before;render();return}
 if(b.dataset.delete){const type=b.dataset.delete,id=b.dataset.id;if(type==='accounts'&&(state.transactions.some(t=>t.accountId===id)||state.recurring.some(r=>r.accountId===id)))return alert('Konto mit Buchungen oder wiederkehrenden Zahlungen kann nicht gelöscht werden.');if(type==='accounts'&&state.accounts.length<=1)return alert('Das letzte Konto kann nicht gelöscht werden.');if(confirm('Eintrag wirklich löschen?')){const before=state[type];state[type]=before.filter(x=>x.id!==id);if(!save())state[type]=before;render()}}
-if(b.id==='export'){const blob=new Blob([JSON.stringify(workspace,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='budget-studio-0.8-alle-haushalte.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+if(b.id==='export'){const blob=new Blob([JSON.stringify(workspace,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='budget-studio-0.8.1-alle-haushalte.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 if(b.id==='reset'&&confirm('Alle Konten und Buchungen in diesem Haushalt zurücksetzen? Andere Haushalte bleiben erhalten.')){const prior=household().data;household().data=blank();state=household().data;if(!save()){household().data=prior;state=prior}render()}
 if(b.id==='choose-household')openPicker();
 if(b.id==='rename-household'){const old=household().name,updated=prompt('Neuer Haushaltsname:',old);if(updated===null)return;const name=updated.trim();if(!name||name.length>60)return alert('Name muss zwischen 1 und 60 Zeichen lang sein.');household().name=name;if(!save())household().name=old;render()}
@@ -449,7 +609,7 @@ if(b.id==='delete-household'){if(workspace.households.length===1)return alert('D
 });
 function updateTaxPreview(){const f=app.querySelector('form[data-form="transactions"]'),preview=app.querySelector('#tax-preview');if(!f||!preview)return;const val=Number(f.querySelector('[name="amount"]')?.value),mode=f.querySelector('[name="entryMode"]')?.value,rate=f.querySelector('[name="vatRate"]')?.value;const r=calculateTax(val,mode,rate);preview.textContent=r?`Netto: ${eur(r.net)} · Steueranteil: ${eur(r.vat)} · Brutto: ${eur(r.gross)}`:'Netto, Steueranteil und Brutto werden bei Eingabe berechnet.'}
 app.addEventListener('input',e=>{if(e.target.closest('form[data-form="transactions"]'))updateTaxPreview();if(e.target.closest('form[data-form="estimate"]'))updateEstimatePreview()});
-app.addEventListener('change',async e=>{if(e.target.id==='bank-csv-file'){await onBankCSV(e.target);return}if(e.target.closest('form[data-form="transactions"]'))updateTaxPreview();if(e.target.id==='month-select'){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value;render()}return}if(e.target.id!=='import')return;const file=e.target.files[0];if(!file)return;if(file.size>5_000_000){alert('Sicherung zu groß (maximal 5 MB).');return}try{const data=JSON.parse(await file.text());
+app.addEventListener('change',async e=>{if(e.target.id==='bank-csv-file'){await onBankFile(e.target);return}if(e.target.closest('form[data-form="transactions"]'))updateTaxPreview();if(e.target.id==='month-select'){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value;render()}return}if(e.target.id!=='import')return;const file=e.target.files[0];if(!file)return;if(file.size>5_000_000){alert('Sicherung zu groß (maximal 5 MB).');return}try{const data=JSON.parse(await file.text());
  if(validWorkspace(data)){if(!confirm('ALLE jetzigen Haushalte durch diese Sicherung ersetzen?'))return;const previous=workspace;workspace=data;workspace.households.forEach(h=>h.data=normalizeData(h.data));workspace.activeId=workspace.activeId||workspace.households[0].id;state=household().data;storageLocked=false;if(!save()){workspace=previous;state=household().data;return}if(workspace.households.length===1)resumeSingleHousehold();else{openPicker();render()}alert('Sicherung aller Haushalte wurde importiert.');return}
  if(validBackup(data)){if(!confirm('Alte Sicherung (0.5) als NEUEN Haushalt importieren? Vorhandene Haushalte bleiben erhalten.'))return;const newHousehold={id:uid(),name:'Importierter Haushalt',kind:'personal',members:[],data:normalizeData(data)};workspace.households.push(newHousehold);if(!save()){workspace.households.pop();return}openPicker();alert('Alter Datenstand wurde als zusätzlicher Haushalt importiert.');return}
  throw Error('Ungültige Sicherung')
