@@ -1,33 +1,9 @@
-# Budget Studio 0.8.4 – Premium-Designs
+# Budget Studio Web-Testversion 0.9.2 – Gastro & Gutachter
 
-Ein Update von 0.8.3 mit **zwölf auswählbaren Designs**. Die bestehenden Funktionen aus 0.8.2/0.8.3 bleiben unverändert erhalten; an Import-, Buchungs- und Kontostandsberechnungen wurden keine Änderungen vorgenommen.
+Diese Web-Version dient weiterhin nur zum Entwickeln/Testen auf iPhone oder im Browser. Die langfristige Zielplattform ist die installierbare Android/iOS-App.
 
-## Designs
+Neue Betriebsarten: Gastronomie (3 Kalkulatoren), Gutachter/Kfz-Sachverständige (Kundentabelle, Fälle, Bildzuordnung und PDF-Export).
 
-- Salbei
-- Pastell-Pink
-- Schwarz-Gold
-- Blau-Schwarz
-- Pink-Schwarz
-- Lavendel
-- Ice / Hellblau
-- **AMG Style:** Anthrazit, Silber, Rot (frei inspiriert, kein offizielles Markendesign)
-- **Porsche Style:** Schwarz, Kreide, Gold (frei inspiriert, kein offizielles Markendesign)
-- **Apple Clean:** Weiß, Grau, Blau (frei inspiriert, kein offizielles Markendesign)
-- **Neon Cyber:** Schwarz, Türkis, Lila
-- **Baustellen Style:** Anthrazit, Gelb, Orange
+Vor dem Update **JSON-Sicherung** erstellen. Danach alle 7 Dateien einschließlich der neuen `business-extra.js` sowie `sw.js` (zusammen 8 Dateien) bei GitHub Pages ersetzen. Bei Cache-Problemen `?v=092b` an URL anhängen.
 
-## Design auswählen
-
-Auf den Button **Design** (◐) in der App tippen, dann die gewünschte Farbwelt auswählen. Das Design wird **je Haushalt separat gespeichert**; es kann jederzeit wieder gewechselt werden. Die zuvor eingestellte Farbwelt wird beim Upgrade beibehalten.
-
-## Installation
-
-1. Unbedingt unter **Mehr → Daten & Einstellungen** ein JSON-Backup aller Haushalte herunterladen.
-2. ZIP entpacken; alle sieben Dateien ins vorhandene öffentliche GitHub-Pages-Repository hochladen und die alten ersetzen. **Keine Kontoauszüge oder Backups in GitHub hochladen.**
-3. Mit Internetverbindung in Safari die GitHub-Pages-URL mit `?v=084` neu aufrufen, um den aktualisierten PWA-Cache zu laden. Falls die Home-Screen-App noch alt aussieht, diese vollständig schließen und erneut öffnen.
-4. **Keine Website-Daten löschen** – dort liegen die lokal gespeicherten Haushalts- und Buchungsdaten.
-
-## Sicherheit
-
-Alle Finanzdaten bleiben gemäß bisherigem Modell im lokalen Browser-Speicher. Das Update verändert keine gespeicherten Konten, Umsätze oder Importe. Es ersetzt keine professionelle Banksoftware; insbesondere können die PDF-Erkennungsfehler und falschen Salden aus früheren Versionen weiter bestehen.
+Kundenfotos und Daten werden lokal und derzeit unverschlüsselt gespeichert: **nur Testdaten nutzen**. Die PDF-Exportfunktion lädt keine fremden PDF-Bibliotheken nach.
