@@ -244,3 +244,72 @@ body.appleclean {color-scheme:light}
 .assessor-photo-footer>div{display:flex;gap:4px;flex-shrink:0}
 .assessor-photo-footer button{padding:4px 8px;font-size:16px}
 @media(max-width:500px){.assessor-summary{gap:7px}.assessor-summary .panel{padding:11px}.assessor-summary strong{font-size:24px}.assessor-table th,.assessor-table td{padding:10px 7px;font-size:11px}.assessor-photo-card img{height:125px}.assessor-detail-grid{gap:10px}}
+
+/* Budget Studio 0.9.3 – leichter Einstieg, große Touchflächen, Auftragsverwaltung */
+.simple-steps{display:grid;gap:12px;margin:15px 0 20px}
+.simple-steps>div{display:flex;align-items:flex-start;gap:14px;padding:17px;background:var(--panel);border:1px solid var(--line);border-radius:18px}
+.simple-steps>div>span{display:grid;place-items:center;flex:none;width:39px;height:39px;background:var(--accent);color:var(--panel);border-radius:12px;font-size:18px;font-weight:800}
+.simple-steps b{display:block;font-size:17px;margin:0 0 4px}.simple-steps p{margin:0;color:var(--muted);line-height:1.55}
+.mini-steps{grid-template-columns:repeat(3,minmax(0,1fr))}.mini-steps>div{padding:14px;gap:10px}.mini-steps b{font-size:14px}.mini-steps p{font-size:13px}
+.quick-start{margin:0 0 18px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-radius:20px;padding:17px 19px;background:var(--soft);border:1px solid var(--line)}
+.quick-start>div{min-width:210px;flex:1}.quick-start b{font-size:17px}.quick-start p{margin:5px 0 0;font-size:14px}.quick-start button{border:1px solid var(--line);font-weight:700;background:var(--panel)}
+.quick-start button:first-of-type{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.order-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.order-overview .panel{margin:0;min-height:112px}.order-overview small{display:block;color:var(--muted);font-size:13px}.order-overview strong{display:block;margin-top:12px;font-size:30px}
+.order-top-actions,.order-status-actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.order-top-actions button{flex:1;min-width:180px;font-weight:700}
+.order-search-box{display:grid;grid-template-columns:1fr 190px;gap:12px}.order-search-box label,.order-search-label{display:grid;gap:7px;font-size:14px;font-weight:700;color:var(--muted)}
+.order-search-box input,.order-search-box select,.order-search-label input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink)}
+.order-card{margin-bottom:11px}.order-card .row{align-items:flex-start}.order-card h3{font-size:19px;margin:8px 0 2px;overflow-wrap:anywhere}.order-card p{margin:5px 0}.order-card .row>div{min-width:0}.order-card .row>b{font-size:19px;white-space:nowrap}
+.order-card-bottom{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;align-items:center!important}
+.order-state{display:inline-flex;max-width:100%;border-radius:99px;padding:5px 11px;background:var(--soft);color:var(--accent);font-size:12px;font-weight:800}
+.order-state[data-status=working]{background:#fff0cb;color:#755320}.order-state[data-status=completed],.order-state[data-status=paid]{background:#ddf6e8;color:#256d48}.order-state[data-status=canceled]{background:#fbe1e5;color:#923e4b}
+.order-customer-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 0;border-bottom:1px solid var(--line)}
+.order-customer-row:last-child{border-bottom:0}.order-customer-row p{margin:5px 0 0;overflow-wrap:anywhere}
+.empty-state{text-align:center;padding:25px;line-height:1.6}.empty-state p{color:var(--muted)}
+.order-form-stack{display:grid;gap:12px}.order-form-stack .panel{margin:0}.order-form-stack .form{margin:0}
+.order-form-stack h3{font-size:19px;margin:0 0 15px}
+.order-form-stack label{display:grid;gap:7px;font-size:14px;font-weight:700;color:var(--ink);margin:12px 0}
+.order-form-stack input,.order-form-stack textarea,.order-form-stack select{width:100%;min-width:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:13px;font:inherit}
+.order-form-stack .form label{margin:2px 0}.order-form-stack textarea{resize:vertical;line-height:1.5}
+.order-line-input{display:grid;grid-template-columns:minmax(180px,2fr) minmax(85px,.7fr) minmax(105px,.8fr) minmax(130px,1fr) auto;gap:9px;align-items:end;border:1px solid var(--line);padding:12px;border-radius:16px;margin-bottom:13px;background:var(--soft)}
+.order-line-input label{font-size:12px;margin:0;min-width:0}.order-line-input input,.order-line-input select{background:var(--panel)}
+.order-remove-line,.order-danger{border:1px solid #b05d68;color:#a33b50;background:var(--panel);font-weight:700}
+.order-danger{margin:12px 0 30px}
+.order-live-totals,.order-totals{margin:15px 0;display:grid;gap:10px;background:var(--soft);padding:17px;border-radius:15px}
+.order-live-totals>div,.order-totals>div{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.order-live-totals>div:last-child,.order-total-big{font-size:21px;font-weight:800;border-top:1px solid var(--line);padding-top:12px}
+.order-save-btn{width:100%;font-size:17px;font-weight:800;margin:16px 0 8px}
+.order-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:16px 0}
+.order-details>div{display:grid;gap:4px;min-width:0}.order-details small{letter-spacing:0;font-size:12px}.order-details b{overflow-wrap:anywhere}
+.order-description{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.order-items-table{overflow-x:auto}.order-items-table table{width:100%;border-collapse:collapse;min-width:530px;text-align:left;font-size:14px}
+.order-items-table th,.order-items-table td{border-bottom:1px solid var(--line);padding:12px 8px;vertical-align:top}.order-items-table td:last-child,.order-items-table th:last-child{text-align:right}
+.order-status-actions button{font-size:13px}.order-totals{margin:22px 0 4px}
+.panel details{padding:14px 3px;border-bottom:1px solid var(--line)}.panel details:last-child{border:0}.panel summary{font-weight:750;cursor:pointer;font-size:16px}.panel details p{line-height:1.7}
+/* Einfache Darstellung: standardmäßig aktiv; alternativ in der Hilfe ausschaltbar. */
+body.easy-mode{font-size:17px;line-height:1.6}
+body.easy-mode button,body.easy-mode input,body.easy-mode select,body.easy-mode textarea{min-height:45px}
+body.easy-mode .muted,body.easy-mode .metric span,body.easy-mode .panel small{font-size:clamp(13px,1.25vw,15px);letter-spacing:0}
+body.easy-mode .feature-link b{font-size:16px}
+body.easy-mode .feature-link small{font-size:14px;line-height:1.45}
+body.easy-mode .panel{line-height:1.65}
+body.easy-mode .household-choice{min-height:93px}
+body.easy-mode .choice-detail small{font-size:13px}
+body.easy-mode .picker-inner>.muted,body.easy-mode .picker-footnote{font-size:14px}
+body.easy-mode .picker-inner .create-household label{font-size:14px}
+body.easy-mode nav button{font-size:14px}
+body.easy-mode .bank-preview-row{font-size:13px}
+body.easy-mode .assessor-table td,body.easy-mode .assessor-table th{font-size:13px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:800px){
+ .mini-steps{grid-template-columns:1fr}.mini-steps>div{align-items:center}
+ .order-line-input{grid-template-columns:1fr 1fr;gap:8px}.order-line-input label:first-child{grid-column:1/-1}.order-line-input label:nth-child(4){grid-column:1/-1}.order-remove-line{grid-column:1/-1}
+ .order-search-box{grid-template-columns:1fr}.order-overview{gap:8px}.order-overview .panel{padding:13px}.order-overview strong{font-size:24px}
+ body.easy-mode nav button{font-size:11px;min-height:54px;padding:6px 3px}
+ body.easy-mode .trade-card small,body.easy-mode .muted{font-size:14px}
+ body.easy-mode .household-choice{min-height:86px}
+ .order-card .row>b{font-size:16px}
+ .order-card-bottom{flex-wrap:wrap}.order-card-bottom button{width:100%}
+}
+@media(max-width:380px){.order-overview{grid-template-columns:1fr 1fr}.order-overview .panel:last-child{grid-column:1/-1}}
