@@ -1,24 +1,24 @@
-# Budget Studio 0.6 – Haushalte, Fixkosten und Finanzkalender
+# Budget Studio 0.6.2 – Kompaktes Menü & Geschäfts-Haushalte
 
-Neue Funktionen:
-- Beim **App-Start** wird eine Haushaltsauswahl angezeigt; persönliche und gemeinsame Haushalte sind getrennt.
-- Haushalt anlegen/umbenennen/löschen und jederzeit wechseln.
-- Wiederkehrende Zahlungen (monatlich oder jährlich) werden beim Öffnen des Haushalts gebucht, sobald sie fällig sind (offline ebenfalls). Bereits gebuchte Termine werden anhand ihrer Kennung nicht doppelt angelegt. Bei weit zurückliegenden Startdaten maximal 240 Nachbuchungen pro Regel und Öffnung.
-- Kalender mit gebuchten Einträgen und anstehenden Zahlungsterminen.
-- Import alter 0.5-Sicherungen als zusätzlicher Haushalt; neue Komplettsicherung aller Haushalte.
+## Was ist neu?
 
-## WICHTIG: Aktualisierung von 0.5
+- Intelligenter App-Start: Beim ersten Mal Haushaltsauswahl; später bei einem Haushalt direkt ins Dashboard, bei mehreren Haushalten weiterhin Auswahl.
+- Mobile Navigation auf fünf gleich breite Bereiche begrenzt: Übersicht, Buchungen, Konten, Planung, Mehr – ohne horizontales Scrollen.
+- Unter **Planung**: Abos & Fixkosten auf einer gemeinsamen Seite, Finanzkalender, Sparziele, Schulden.
+- Bei **Haushalt erstellen** steht jetzt auch **Geschäft / Firma** zur Verfügung. Dessen Konten, Buchungen und Auswertungen sind von Privathaushalten getrennt.
+- Girokonto, Kreditkarte oder Geschäftskonto lassen sich wie bisher als manuelle Konten verwalten.
 
-1. **Zuerst in Version 0.5 unter „Daten“ eine JSON-Datensicherung exportieren!** Bewahre sie separat auf.
-2. Auf GitHub alle sieben Dateien des entpackten Ordners ins Stammverzeichnis des bestehenden Repositories hochladen und vorhandene ersetzen (kein zusätzlicher Unterordner).
-3. GitHub Pages-Veröffentlichung abwarten. Bei Verbindung mit dem Internet Safari-Seite neu laden; installierte App vollständig schließen und neu starten. Eventuell Pages-URL mit `?v=6` in Safari öffnen.
-4. Beim ersten Start erscheint ein Standardhaushalt mit der **Kopie** der bisherigen Daten. Die ursprünglichen Browserdaten im Schlüssel `budget-studio-v1` werden **nicht gelöscht**.
-5. Prüfe Kontostände und Buchungen, ehe du neue Buchungen eingibst. Teste Export und Import deiner Sicherung.
+## Wichtige Einschränkung
 
-## Technische Hinweise
+**Keine echte Bankverbindung!** Konten werden aktuell nur manuell geführt. Für Banking-Abrufe sind später ein sicherer Open-Banking-Dienst, ausdrückliche Bankfreigabe, Backend und Datenschutzkonzept nötig. Gib in diese App keine Login-Daten deiner Bank ein. Die Geschäftsansicht ist kein Ersatz für ordnungsgemäße Buchhaltung oder Steuerberatung.
 
-- Speicherung nur lokal (`localStorage`, `budget-studio-v2`). Keine Synchronisierung, Anmeldung oder Bankverbindung.
-- Die Haushaltsauswahl zeigt andere Profile nicht verschlüsselt an, sie ist keine Passwortsperre. Gemeinsam und privat bedeutet nur getrennte Datensätze auf demselben Gerät.
-- Automatische Buchungen laufen **nur beim Öffnen/Wechseln des Haushalts**, nicht im Hintergrund oder wenn das Gerät ausgeschaltet ist.
-- Noch keine automatische Kostenaufteilung nach Personen, App-Sperre oder Cloud-Synchronisierung.
-- Testversion. Nicht als geprüfte Finanzsoftware verwenden. Website-Daten nicht löschen, App nicht deinstallieren, regelmäßig JSON exportieren.
+**Abos** dienen als Kostenübersicht. **Fixkosten** werden bei Fälligkeit automatisch gebucht, wenn der entsprechende Haushalt geöffnet wird. Dieselbe Zahlung nicht doppelt als Fixkosten-Regel anlegen.
+
+## Installation
+
+1. In der bisherigen Version zunächst unter Daten eine **JSON-Datensicherung aller Haushalte** erstellen und sicher aufbewahren.
+2. Die **sieben Dateien** dieses ZIP-Archivs in dein bestehendes GitHub-Pages-Repository `budget-studio` hochladen (gleiche Dateinamen überschreiben).
+3. Auf dem iPhone die App mit Internetverbindung neu öffnen; falls nötig in Safari die GitHub-Pages-Adresse mit `?v=62` laden und erneut öffnen. **Website-Daten nicht löschen**, sonst können lokale Buchungen verloren gehen.
+4. Die Daten bleiben unter `budget-studio-v2`; die neue Cache-Version ist `budget-studio-offline-v6-2`.
+
+Lokale Offline-Testversion ohne Server, Synchronisation oder Bankverbindung. Das Repository enthält nur den Quellcode; speichere keine echten Finanzdaten im öffentlichen GitHub-Repository.
