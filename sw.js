@@ -1,4 +1,4 @@
-const CACHE = 'budget-studio-offline-v2';
+const CACHE = 'budget-studio-offline-v3';
 const ASSETS = ['./index.html','./style.css','./app.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
