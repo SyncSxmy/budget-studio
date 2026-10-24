@@ -313,3 +313,49 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .order-card-bottom{flex-wrap:wrap}.order-card-bottom button{width:100%}
 }
 @media(max-width:380px){.order-overview{grid-template-columns:1fr 1fr}.order-overview .panel:last-child{grid-column:1/-1}}
+
+/* 0.9.4 – Gutachter-Reparaturkalkulation und Fotodokumentation (Testversion) */
+.repair-panel>.row{align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.repair-panel>.row h3{margin:0 0 6px}
+.repair-panel>.row p{max-width:720px;line-height:1.55}
+.repair-entry{background:var(--soft);border-radius:18px;padding:18px;margin:18px 0}
+.repair-entry h3{margin:0 0 4px}
+.repair-entry input,.repair-entry select{background:var(--panel);min-height:46px}
+.repair-table-wrap{max-width:100%;overflow-x:auto;margin:14px 0}
+.repair-table{width:100%;border-collapse:collapse;text-align:left}
+.repair-table th,.repair-table td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:12px}
+.repair-table th{color:var(--muted);font-size:11px}
+.repair-table td:first-child{min-width:180px;overflow-wrap:anywhere}
+.repair-table td .muted{font-size:11px;line-height:1.5;margin-top:5px}
+.repair-actions{display:flex;gap:5px;flex-direction:column}
+.repair-actions button{min-width:85px;padding:9px 10px;font-size:12px}
+.repair-totals{border:1px solid var(--line);border-radius:15px;padding:16px;display:grid;gap:10px;margin:15px 0}
+.repair-totals>div{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.repair-totals label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.repair-totals select{max-width:130px;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.repair-totals .repair-total-main{border-top:1px solid var(--line);padding-top:13px;align-items:start;font-weight:750}
+.repair-total-main strong{font-size:clamp(19px,3vw,26px);color:var(--accent);white-space:nowrap}
+.photo-panel>.row{flex-wrap:wrap;margin-bottom:7px}
+.photo-panel .assessor-photo-card img{background:var(--soft)}
+.photo-panel .assessor-photo-card img.photo-missing{object-fit:contain}
+.photo-storage-note{margin-top:13px;line-height:1.6}
+@media(max-width:600px){
+ .repair-entry{padding:13px}
+ .repair-table{display:block}
+ .repair-table thead{display:none}
+ .repair-table tbody{display:grid;gap:10px}
+ .repair-table tr{display:grid;grid-template-columns:1fr 1fr;gap:7px;border:1px solid var(--line);border-radius:13px;padding:12px;background:var(--panel)}
+ .repair-table td{border:0;padding:2px;min-width:0!important;font-size:12px}
+ .repair-table td:first-child{grid-column:1/-1;border-bottom:1px solid var(--line);padding-bottom:9px}
+ .repair-table td:nth-child(2):before{content:'Menge: ';color:var(--muted)}
+ .repair-table td:nth-child(3):before{content:'Einzelpreis: ';color:var(--muted)}
+ .repair-table td:nth-child(4){grid-column:1/-1}
+ .repair-table td:nth-child(4):before{content:'Summe: ';color:var(--muted)}
+ .repair-table td:nth-child(5){grid-column:1/-1}
+ .repair-actions{flex-direction:row;flex-wrap:wrap}
+ .repair-totals .repair-total-main{flex-wrap:wrap}
+ .photo-panel .assessor-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .photo-panel .assessor-photo-card img{height:125px}
+ .photo-panel .assessor-photo-footer{align-items:flex-start;flex-direction:column}
+ .photo-panel .assessor-photo-footer>div{width:100%;justify-content:flex-end}
+}

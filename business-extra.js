@@ -2,8 +2,8 @@
 /* Budget Studio 0.9.2 – optional business customer, damage and PDF reporting tools.
    No external cloud requests; small photographs are stored in the existing household JSON.
    Prototype for TEST DATA ONLY, no insurance expert opinion or secure customer-data vault. */
-let assessorCustomerId=null,assessorCaseId=null,assessorEditCustomer=false,assessorEditCaseId=null;
-function resetAssessorSelection(){assessorCustomerId=null;assessorCaseId=null;assessorEditCaseId=null;assessorEditCustomer=false}
+let assessorCustomerId=null,assessorCaseId=null,assessorEditCustomer=false,assessorEditCaseId=null,assessorEditRepairId=null;
+function resetAssessorSelection(){assessorCustomerId=null;assessorCaseId=null;assessorEditCaseId=null;assessorEditCustomer=false;assessorEditRepairId=null}
 function assessorCustomersData(){const h=household();if(!Array.isArray(h.assessorCustomers))h.assessorCustomers=[];return h.assessorCustomers}
 function activeAssessorCustomer(){return assessorCustomersData().find(x=>x.id===assessorCustomerId)}
 function activeAssessorCase(){return activeAssessorCustomer()?.cases?.find(x=>x.id===assessorCaseId)}
@@ -58,18 +58,54 @@ function assessorCase(){
  return `<button type="button" class="planning-back" data-open-view="assessorClient">‹ Zur Kundenakte</button>`+
  assessorHeader(k.vehicle,'Schadenakte für '+c.name)+
  `<div class="panel assessor-case-header"><div class="row"><div><small>Fahrzeug / Kennzeichen</small><h3>${esc(k.vehicle)} · ${esc(k.plate||'ohne Kennzeichen')}</h3></div><span class="pill">${esc(k.status)}</span></div>
- <div class="assessor-detail-grid"><div><small>Schadendatum</small><b>${esc(k.date)}</b></div><div><small>FIN / VIN</small><b>${esc(k.vin||'–')}</b></div><div><small>Kunde</small><b>${esc(c.name)}</b></div><div><small>Geschätzte Kosten</small><b>${k.estimate===null||k.estimate===undefined?'Nicht angegeben':eur(k.estimate)}</b></div></div>
+ <div class="assessor-detail-grid"><div><small>Schadendatum</small><b>${esc(k.date)}</b></div><div><small>FIN / VIN</small><b>${esc(k.vin||'–')}</b></div><div><small>Kunde</small><b>${esc(c.name)}</b></div><div><small>Geschätzte Kosten</small><b>${k.repairLines?.length?eur(assessorRepairTotals(k).gross)+' (berechnet)':k.estimate===null||k.estimate===undefined?'Nicht angegeben':eur(k.estimate)}</b></div></div>
  <h3>Schadenbeschreibung</h3><p class="assessor-damage">${esc(k.damage)}</p>
  <div class="assessor-actions"><button type="button" class="primary" data-assessor-pdf>PDF erstellen / drucken</button><button type="button" data-assessor-edit-case="${esc(k.id)}">Schaden bearbeiten</button><button type="button" class="assessor-delete" data-assessor-delete-case="${esc(k.id)}">Schadenfall löschen</button></div></div>
- <div class="panel"><h3>Schadenfotos · ${photos.length} / 4</h3><p class="muted">JPG oder PNG wählen. Die Bilder werden lokal verkleinert und mit dieser Schadenakte gespeichert. Sie erscheinen auf zusätzlichen Seiten des PDF-Berichts.</p>
- <label class="assessor-photo-picker">Fotos zum Schaden hinzufügen<input id="assessor-photo-file" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple ${photos.length>=4?'disabled':''}></label>
- <div class="assessor-photo-grid">${photos.map(p=>`<div class="assessor-photo-card"><img src="${p.dataUrl}" alt="${esc(p.label)}"><div class="assessor-photo-footer"><span title="${esc(p.label)}">${esc(p.label)}</span><div><button type="button" class="small-action" data-assessor-rename-photo="${esc(p.id)}">✎</button><button type="button" class="small-action assessor-delete" data-assessor-remove-photo="${esc(p.id)}">×</button></div></div></div>`).join('')||'<p class="muted">Noch keine Fotos zugeordnet.</p>'}</div></div>
- <p class="notice-panel">Berichte sind eine <b>Dokumentationsvorlage</b>, kein rechtlich anerkanntes Schadengutachten. Es werden keine automatischen Reparaturwerte oder Haftungsfeststellungen berechnet. Bitte keine echten Kundendaten in dieser ungesicherten Testversion verwenden.</p>`;
+${assessorRepairHtml(k)}${photoGallery('case',photos)}
+ <p class="notice-panel">Berichte sind eine <b>Dokumentationsvorlage</b>, kein rechtlich anerkanntes Schadengutachten. Reparaturwerte werden nur aus manuell eingegebenen Preisen errechnet. Originalteilenummern, Teilepreise und fachliche Reparaturwege müssen überprüft werden. Bitte keine echten Kundendaten in dieser ungesicherten Testversion verwenden.</p>`;
+}
+// Manually entered repair cost estimate: NO OEM-price/FIN provider is connected.
+const REPAIR_TYPES=[['part','Originalteil / Ersatzteil'],['labor','Arbeitszeit / Montage'],['paint','Lackierung / Material'],['other','Weitere Kosten']];
+function assessorRepairTotals(k){
+ const lines=Array.isArray(k.repairLines)?k.repairLines:[],net=round2(lines.reduce((n,l)=>n+round2(l.qty*l.price),0));
+ const rate=[0,7,19].includes(k.repairVatRate)?k.repairVatRate:19,vat=round2(net*rate/100);
+ return {net,rate,vat,gross:round2(net+vat)};
+}
+function assessorRepairHtml(k){
+ const lines=Array.isArray(k.repairLines)?k.repairLines:[],total=assessorRepairTotals(k),edit=lines.find(l=>l.id===assessorEditRepairId);
+ const select=(values,current)=>values.map(([v,t])=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(t)}</option>`).join('');
+ return `<section class="panel repair-panel"><div class="row"><div><h3>Reparaturkosten berechnen</h3><p class="muted">Originalteile, Arbeitszeit und Lackierung einzeln erfassen. Preise werden hier <b>manuell</b> eingetragen – noch keine FIN- oder Herstellerpreisanbindung.</p></div><span class="pill">${lines.length} Positionen</span></div>
+ ${lines.length?`<div class="repair-table-wrap"><table class="repair-table"><thead><tr><th>Position</th><th>Menge</th><th>Einzel netto</th><th>Summe netto</th><th></th></tr></thead><tbody>${lines.map(l=>`<tr><td><b>${esc(l.title)}</b><div class="muted">${esc(REPAIR_TYPES.find(t=>t[0]===l.category)?.[1]||'Kosten')} · ${esc(l.manufacturer||'Hersteller nicht angegeben')}${l.partNumber?' · OE-Nr. '+esc(l.partNumber):''}${l.source?' · Quelle: '+esc(l.source):''}${l.priceDate?' · Stand: '+esc(l.priceDate):''}</div></td><td>${l.qty.toLocaleString('de-DE')} ${esc(l.unit)}</td><td>${eur(l.price)}</td><td><b>${eur(round2(l.qty*l.price))}</b></td><td><div class="repair-actions"><button type="button" class="small-action" data-assessor-edit-repair="${esc(l.id)}">Bearbeiten</button><button type="button" class="small-action assessor-delete" data-assessor-delete-repair="${esc(l.id)}">Löschen</button></div></td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">Noch keine Reparaturpositionen. Beginne mit einem Ersatzteil oder der Arbeitszeit.</p>'}
+ <form class="form repair-entry" data-form="assessor-repair-line"><h3 class="wide">${edit?'Position bearbeiten':'＋ Neue Kostenposition'}</h3>
+ <label>Art der Kosten<select name="category">${select(REPAIR_TYPES,edit?.category||'part')}</select></label>
+ <label>Bezeichnung *<input name="title" maxlength="120" required placeholder="z. B. Stoßfänger vorne" value="${esc(edit?.title||'')}"></label>
+ <label>Hersteller (optional)<input name="manufacturer" maxlength="70" placeholder="z. B. Mercedes-Benz" value="${esc(edit?.manufacturer||'')}"></label>
+ <label>Originalteilenummer / OE-Nr. (optional)<input name="partNumber" maxlength="70" placeholder="Nur nach Prüfung eintragen" value="${esc(edit?.partNumber||'')}"></label>
+ <label>Menge *<input name="qty" type="number" min="0.01" max="100000" step="any" required value="${edit?.qty??1}"></label>
+ <label>Einheit<select name="unit">${select([['Stk','Stück'],['Std','Stunden'],['m','Meter'],['pauschal','Pauschal']],edit?.unit||'Stk')}</select></label>
+ <label>Einzelpreis netto in € *<input name="price" type="number" min="0" max="9999999" step="0.01" required value="${edit?.price??0}"></label>
+ <label>Preisstand (optional)<input name="priceDate" type="date" value="${esc(edit?.priceDate||'')}"></label>
+ <label class="wide">Quelle / Preisbeleg (optional)<input name="source" maxlength="150" placeholder="z. B. Angebot Vertragshändler vom …" value="${esc(edit?.source||'')}"></label>
+ <button type="submit" class="primary wide">${edit?'Änderungen an Position speichern':'Position zur Kalkulation hinzufügen'}</button>${edit?'<button class="wide" type="button" data-assessor-cancel-repair>Bearbeitung abbrechen</button>':''}</form>
+ <div class="repair-totals"><div><span>Gesamt netto</span><b>${eur(total.net)}</b></div><label>Umsatzsteuer <select data-assessor-repair-tax>${select([['19','19 %'],['7','7 %'],['0','0 %']],String(total.rate))}</select></label><div><span>Steueranteil</span><b>${eur(total.vat)}</b></div><div class="repair-total-main"><span>Voraussichtliche Reparaturkosten brutto</span><strong>${eur(total.gross)}</strong></div></div>
+ <p class="notice-panel"><b>Hinweis:</b> Preise und Teilenummern sind manuelle Eingaben. Weder Originalteil-Eignung noch verbindliche Herstellerpreise oder Reparaturzeiten werden automatisch geprüft. Die Kalkulation ersetzt kein fachliches Gutachten.</p></section>`;
 }
 function assessorText(form,key){return String(new FormData(form).get(key)||'').trim()}
 function handleAssessorForm(form,type){
  if(!businessHousehold()||!tradesOf().includes('assessor'))return;
  const customers=assessorCustomersData();
+ if(type==='assessor-repair-line'){
+  const k=activeAssessorCase();if(!k)return;
+  const get=n=>assessorText(form,n),category=get('category'),qty=Number(get('qty')),price=Number(get('price')),
+   partNumber=get('partNumber'),manufacturer=get('manufacturer'),source=get('source'),priceDate=get('priceDate'),title=get('title'),unit=get('unit');
+  if(!REPAIR_TYPES.some(t=>t[0]===category)||!title||title.length>120||manufacturer.length>70||partNumber.length>70||source.length>150||(priceDate&&!isDate(priceDate))||!['Stk','Std','m','pauschal'].includes(unit)||!Number.isFinite(qty)||qty<=0||qty>100000||!Number.isFinite(price)||price<0||price>9999999)return alert('Bitte Bezeichnung, Menge und Preis prüfen.');
+  if(!Array.isArray(k.repairLines))k.repairLines=[];
+  const data={category,title,manufacturer,partNumber,source,priceDate,unit,qty,price:round2(price)};
+  const previous=assessorEditRepairId?k.repairLines.find(l=>l.id===assessorEditRepairId):null;
+  if(previous){const before={...previous};Object.assign(previous,data);if(!save()){Object.assign(previous,before);return}}
+  else{if(k.repairLines.length>=60)return alert('Maximal 60 Kostenpositionen je Schadenfall.');const line={id:uid(),...data};k.repairLines.push(line);if(!save()){k.repairLines.pop();return}}
+  assessorEditRepairId=null;render();return;
+ }
  if(['assessor-customer','assessor-customer-edit'].includes(type)){
   const d={name:assessorText(form,'name'),phone:assessorText(form,'phone'),email:assessorText(form,'email'),address:assessorText(form,'address'),notes:assessorText(form,'notes')};
   if(!d.name||d.name.length>100||d.phone.length>60||d.email.length>120||d.address.length>200||d.notes.length>800)return alert('Bitte Kundendaten prüfen.');
@@ -116,20 +152,6 @@ async function compressedAssessorPhoto(file){
  if(url.length>245000)throw Error('Foto ist zu groß, bitte kleiner zuschneiden.');
  return {id:uid(),label:file.name.slice(0,70)||'Schadenfoto',dataUrl:url,width:canvas.width,height:canvas.height};
 }
-async function addAssessorPhotos(input){
- const k=activeAssessorCase();if(!k||!Array.isArray(k.photos))return;
- const files=[...(input.files||[])];if(!files.length)return;
- if(files.length>4-k.photos.length){alert('Maximal 4 Bilder je Schadenfall.');input.value='';return}
- input.disabled=true;
- const added=[];
- try{
-  for(const f of files)added.push(await compressedAssessorPhoto(f));
-  k.photos.push(...added);
-  if(!save()){k.photos.splice(-added.length,added.length);return}
-  render();
- }catch(e){alert('Foto konnte nicht übernommen werden: '+String(e.message||e));}
- finally{input.disabled=false;input.value=''}
-}
 // PDF 1.4 writer: pure local PDF export with WinAnsi text and JPEG evidence images.
 // Generates an A4 information report, intentionally not a legally binding expert opinion.
 function pdfEscapeText(s){
@@ -170,6 +192,26 @@ function generateAssessorPdf(c,k,company){
  text(first,43,72,'Dokumentationsvorlage – kein offizielles Gutachten, keine Haftungs- oder',9);
  text(first,43,58,'Wertfeststellung. Angaben sind vor Verwendung fachlich zu prüfen.',9);
  emitPage(first,[]);
+ const repair=Array.isArray(k.repairLines)?k.repairLines:[];
+ if(repair.length){
+  const total=assessorRepairTotals(k);
+  for(let page=0;page<repair.length;page+=16){
+   const cmd=[];text(cmd,40,790,'Reparaturkosten – '+k.vehicle,17,true);
+   text(cmd,40,766,'Kunde: '+c.name+' · Positionen '+(page+1)+' bis '+Math.min(page+16,repair.length),10);rule(cmd,747);
+   let pos=724;
+   for(const l of repair.slice(page,page+16)){
+    text(cmd,42,pos,(l.title||'Position').slice(0,48),10,true);
+    text(cmd,42,pos-14,((l.partNumber?'OE-Nr. '+l.partNumber+' · ':'')+(l.manufacturer||'')+' '+(l.source?' | '+l.source:'')).slice(0,78),8);
+    text(cmd,370,pos,l.qty+' '+l.unit,9);text(cmd,462,pos,new Intl.NumberFormat('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}).format(round2(l.qty*l.price))+' EUR',9,true);
+    pos-=37;rule(cmd,pos+12);
+   }
+   if(page+16>=repair.length){pos=Math.max(92,pos-6);text(cmd,42,pos-5,'Netto: '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(total.net),11,true);
+    text(cmd,42,pos-22,'USt ('+total.rate+' %): '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(total.vat),10);
+    text(cmd,42,pos-40,'Brutto: '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(total.gross),12,true);}
+   text(cmd,42,48,'Manuelle Beispielkalkulation; Positionen, Preisquellen und Steuersatz prüfen.',9);
+   emitPage(cmd,[]);
+  }
+ }
  for(let start=0;start<photos.length;start+=2){
   const two=photos.slice(start,start+2),commands=[];text(commands,40,791,'Fotodokumentation – '+c.name,17,true);text(commands,40,766,k.vehicle+' · '+(k.plate||'ohne Kennzeichen'),11);rule(commands,748);
   const images=[];
@@ -198,7 +240,7 @@ function generateAssessorPdf(c,k,company){
 async function exportAssessorPdf(){
  const c=activeAssessorCustomer(),k=activeAssessorCase();if(!c||!k)return;
  try{
-  const pdf=generateAssessorPdf(c,k,nameOfHousehold());
+  const resolved=await photoResolve(k.photos||[]);const pdf=generateAssessorPdf(c,{...k,photos:resolved},nameOfHousehold());
   const filename='Schadenbericht-'+(k.plate||k.vehicle).replace(/[^a-zA-Z0-9äöüÄÖÜß-]/g,'-').slice(0,35)+'-'+k.date+'.pdf';
   const native=window.Capacitor?.isNativePlatform?.(),plugins=window.Capacitor?.Plugins;
   if(native&&plugins?.Filesystem&&plugins?.Share){
@@ -221,11 +263,14 @@ document.addEventListener('click',e=>{
  if(b.dataset.assessorEditCase){assessorEditCaseId=b.dataset.assessorEditCase;setView('assessorClient');return}
  if(b.hasAttribute('data-assessor-cancel-edit')){assessorEditCaseId=null;render();return}
  if(b.hasAttribute('data-assessor-pdf')){exportAssessorPdf();return}
+ if(b.dataset.assessorEditRepair){assessorEditRepairId=b.dataset.assessorEditRepair;render();return}
+ if(b.hasAttribute('data-assessor-cancel-repair')){assessorEditRepairId=null;render();return}
+ if(b.dataset.assessorDeleteRepair){const k=activeAssessorCase();if(!k?.repairLines||!confirm('Kostenposition löschen?'))return;const i=k.repairLines.findIndex(l=>l.id===b.dataset.assessorDeleteRepair);if(i<0)return;const [old]=k.repairLines.splice(i,1);if(!save()){k.repairLines.splice(i,0,old);return}assessorEditRepairId=null;render();return}
  const c=activeAssessorCustomer(),k=activeAssessorCase();
- if(b.dataset.assessorDeleteClient){const idx=assessorCustomersData().findIndex(x=>x.id===b.dataset.assessorDeleteClient);if(idx<0||!confirmAssessorDelete('Kundenakte wirklich löschen?'))return;const [old]=assessorCustomersData().splice(idx,1);if(!save()){assessorCustomersData().splice(idx,0,old);return}resetAssessorSelection();setView('assessorClients');return}
- if(b.dataset.assessorDeleteCase){if(!c||!k||!confirmAssessorDelete('Schadenfall wirklich löschen?'))return;const idx=c.cases.findIndex(x=>x.id===b.dataset.assessorDeleteCase);if(idx<0)return;const [old]=c.cases.splice(idx,1);if(!save()){c.cases.splice(idx,0,old);return}assessorCaseId=null;setView('assessorClient');return}
+ if(b.dataset.assessorDeleteClient){const idx=assessorCustomersData().findIndex(x=>x.id===b.dataset.assessorDeleteClient);if(idx<0||!confirmAssessorDelete('Kundenakte wirklich löschen?'))return;const [old]=assessorCustomersData().splice(idx,1);if(!save()){assessorCustomersData().splice(idx,0,old);return}photoCleanup((old.cases||[]).flatMap(k=>k.photos||[]));resetAssessorSelection();setView('assessorClients');return}
+ if(b.dataset.assessorDeleteCase){if(!c||!k||!confirmAssessorDelete('Schadenfall wirklich löschen?'))return;const idx=c.cases.findIndex(x=>x.id===b.dataset.assessorDeleteCase);if(idx<0)return;const [old]=c.cases.splice(idx,1);if(!save()){c.cases.splice(idx,0,old);return}photoCleanup(old.photos||[]);assessorCaseId=null;setView('assessorClient');return}
  if(b.dataset.assessorRemovePhoto){if(!k||!confirm('Bild dauerhaft aus der Schadenakte entfernen?'))return;const idx=k.photos.findIndex(x=>x.id===b.dataset.assessorRemovePhoto);if(idx<0)return;const [old]=k.photos.splice(idx,1);if(!save()){k.photos.splice(idx,0,old);return}render();return}
  if(b.dataset.assessorRenamePhoto){if(!k)return;const pic=k.photos.find(x=>x.id===b.dataset.assessorRenamePhoto);if(!pic)return;const next=prompt('Bildbeschreibung:',pic.label);if(next===null)return;const label=next.trim().slice(0,70);if(!label)return;const old=pic.label;pic.label=label;if(!save()){pic.label=old;return}render()}
 });
-document.addEventListener('change',e=>{if(e.target.id==='assessor-photo-file')addAssessorPhotos(e.target)});
+document.addEventListener('change',e=>{if(e.target.matches?.('[data-assessor-repair-tax]')){const k=activeAssessorCase();if(!k)return;const prior=k.repairVatRate;k.repairVatRate=Number(e.target.value);if(!save())k.repairVatRate=prior;render();}});
 document.addEventListener('input',e=>{if(e.target.id!=='assessor-customer-search')return;const q=e.target.value.trim().toLocaleLowerCase('de-DE');document.querySelectorAll('[data-assessor-row]').forEach(row=>row.hidden=!row.dataset.search.includes(q))});

@@ -1,48 +1,37 @@
-# Budget Studio 0.9.3 – Web-Testversion (24.10.2026)
+# Budget Studio 0.9.4 – Fotoverwaltung & Schadenkalkulation
 
-**Für die Testphase mit Freunden/Familie und Einsteigern. Kein Produktions- oder Banking-System.**
+**Testversion – 24. Oktober 2026.** Basis: Budget Studio 0.9.3 inklusive der vereinfachten Bedienung, Auftragsverwaltung, Gutachter, Gastronomie, Schulden-Zinsen und 12 Designs.
 
-## Was ist neu?
+## Neu
 
-- Geschäftshaushalte: Aufträge & Kunden anlegen, suchen, bearbeiten und Status ändern.
-- Kunde → Auftrag → Arbeits-/Materialpositionen → automatisch Netto, 0/7/19 % Umsatzsteuer und Brutto berechnen.
-- Auftragsübersicht drucken oder im Browser über „Drucken → Als PDF speichern“ exportieren. KEINE Rechnung, kein geprüfter Kostenvoranschlag.
-- Bessere Lesbarkeit, größere Schaltflächen und ein standardmäßig aktiver einfacher Modus.
-- „Mehr → Hilfe & erste Schritte“ mit leicht verständlichen Erklärungen und einer optionalen Beispiel-Datenfunktion (inklusive Entfernen der Beispiele).
-- Geschäftshaushalte lassen sich auch ohne Gewerk erstellen; ein Gewerk kann später ausgewählt werden.
-- Die übrigen Funktionen aus 0.9.2 bleiben erhalten, einschließlich Gastro/Gutachter, Schulden-Zinsrechner und 12 Designs.
+- Gutachter → Kunde → Schadenfall: **maximal 30 Fotos je Schadenfall**, Beschreibung ändern, Foto löschen; die Bilder erscheinen auf eigenen Seiten im PDF-Bericht (2 je Seite).
+- Business → Aufträge → Auftrag: **maximal 30 Fotos je Auftrag**, ebenfalls mit Beschriftung; die druckbare Auftragsübersicht enthält Fotoseiten.
+- Foto-Verarbeitung: JPG/PNG/WebP bis 16 MB pro Eingabedatei. Die App verkleinert neue Fotos vor dem Speichern auf maximal 1400 Pixel längste Kante, als JPEG bis ungefähr 205 KB. EXIF/Originalauflösung und Originaldateien werden **nicht** archiviert.
+- Neue Bilder liegen separat im lokalen **IndexedDB-Fotospeicher** des Browsers statt zusammen mit dem Finanzdaten-JSON im begrenzten `localStorage`. Ältere Bilder aus den Vorversionen bleiben lesbar.
+- Unter „Mehr → Daten & Einstellungen → Alle Haushalte inklusive Fotos sichern“ werden Bilder aus dem Fotospeicher **in die JSON-Datensicherung eingebettet**. Import einer solchen Sicherung stellt die Bilder wieder her. Achtung: Backups mit vielen Bildern können groß werden. Speichere sie privat; niemals öffentlich bei GitHub hochladen!
+- Gutachter-Schadenfall: neue manuelle Reparaturkostenkalkulation mit Originalteilenummer, Hersteller, optionaler Preisquelle, Datum, Menge, Einzelpreis, Arbeitszeit und Lackierung. Netto, USt (0/7/19 %) und Brutto werden berechnet und als Anlage im Schadenbericht dokumentiert.
+- **Keine Live-Daten**: Es gibt noch keine FIN-/OEM-/DAT-/TecDoc-Schnittstelle und keine automatische Teilepreissuche. Preise und Nummern sind Eingaben der Benutzer und müssen geprüft werden.
 
-## Update der GitHub-Pages-App
+## Update der Web-App über GitHub Pages
 
-1. **Vorher JSON-Backup** unter „Mehr → Daten & Einstellungen“ erstellen.
-2. Diese ZIP entpacken und sämtliche Dateien aus dem Hauptordner in das bestehende GitHub-Pages-Repository hochladen; insbesondere **`orders-extra.js` nicht vergessen**.
-3. Bei Änderungen an der ZIP-Datei selbst nicht versuchen, nur die ZIP hochzuladen – GitHub Pages benötigt die entpackten Dateien.
-4. Auf das veröffentlichte Update warten; einmal im Safari-Browser die GitHub-Pages-Adresse mit `?v=093a` am Ende laden. Die PWA dann mit Internetverbindung neu öffnen.
-5. **Keine Browserdaten löschen**, um den Cache zu leeren. Die bisherigen lokalen Finanzdaten liegen dort.
-6. Neue Nutzer können die normale HTTPS-GitHub-Pages-Adresse öffnen. Optional können sie „Zum Home-Bildschirm“ verwenden.
+1. **Vorher** deine bisherige Version öffnen: „Mehr → Daten & Einstellungen → Alle Haushalte als JSON sichern“. Nicht die Browserdaten löschen.
+2. ZIP entpacken und **alle 11 Dateien** in das bestehende GitHub-Pages-Repository `budget-studio` hochladen. Wichtig sind insbesondere die neue `media-extra.js`, die aktualisierte `business-extra.js`, `orders-extra.js` und `app.js`.
+3. Veröffentlichung abwarten; in Safari die GitHub-Pages-Adresse bei Internetverbindung mit `?v=094a` öffnen und danach die installierte Web-App neu starten.
+4. Testdaten benutzen: Geschäftshaushalt → „Gutachter/Kfz-Sachverständige“ → Kunden & Schäden → Kunde → Schadenfall → Reparaturkosten / Fotos. Bei einem normalen Betrieb die „Aufträge & Kunden“-Ansicht öffnen.
+5. Nach dem Test eine **neue vollständige JSON-Sicherung** mit Fotos erstellen.
 
-## So funktioniert die Auftragsverwaltung
+## Wichtige Sicherheits- und Qualitätsgrenzen
 
-Geschäftshaushalt wählen → „Übersicht → Aufträge & Kunden“ oder „Werkzeuge → Aufträge & Kunden“.
+- Nur mit erfundenen Testkunden, Testfahrzeugen und nicht-vertraulichen Bildern testen. Kunden- und Bilddaten liegen auf dem jeweiligen Testgerät **unverschlüsselt**; kein sicheres Mehrbenutzersystem, keine Cloud-Synchronisierung, keine automatische Bankverbindung.
+- Der Foto-Zusatzspeicher ist zwar größer als localStorage, aber **nicht unbegrenzt**. Gerätespeicher, Browserkontingente und einzelne sehr große Backups können den Import bzw. Upload verhindern. Fehlende Fotos lassen die Sicherung bewusst abbrechen, anstatt eine unvollständige Datei unbemerkt auszugeben.
+- Verkleinerte Schadenfotos sind **keine unveränderten, beweissicheren Originalfotos**. Für professionelle Gutachten muss eine rechtssichere Originalbildverwaltung später separat entwickelt werden.
+- Auftragsausdruck und Schaden-PDF sind lediglich **Dokumentations-/Kalkulationsvorlagen**, keine rechtlich geprüften Gutachten, Angebote, Rechnungen oder versicherungsrechtlich verbindlichen Reparaturwerte.
+- Die normalen Finanzdaten werden mit dem bisherigen lokalen Datenschema weiterverwendet; ein Update löscht sie nicht. Bei Problemen keine Browserdaten löschen!
+- Die vorherige Windows-Defender-Warnung zur Android-Debug-APK ist noch nicht abschließend geklärt. Keine Schutz-Ausnahmen für die produktive Nutzung einrichten.
 
-- „Kunden verwalten“ → „Kunde hinzufügen“. Name genügt.
-- „Neuen Auftrag erstellen“ → Kunde, Beschreibung, Termin und Preispositionen eingeben.
-- Status anpassen (Anfrage, Angebot erstellt, Beauftragt, In Arbeit, Abgeschlossen, Bezahlt, Storniert).
-- „Drucken / als PDF speichern“ → Druckdialog öffnen, Ausgabeziel „Als PDF sichern“ (je nach Browser/System).
-- Alle Daten werden je Geschäftshaushalt in der **bestehenden lokalen** Haushalts-Sicherung abgelegt. Auftragsbeträge verändern keine Kontostände.
+## Technischer Teststatus
 
-## Bitte zwingend für den Test beachten
-
-- Nur **erfundene** Namen, Kunden, Schadenfälle, Fotos und Finanzdaten benutzen.
-- Kein echtes Online-Banking oder Bezahlsystem; direkte Bankverbindung ist noch nicht vorhanden.
-- Keine Cloud-/Gerätesynchronisierung: Jede Person sieht nur ihre eigenen lokalen Daten in ihrem Browser. Der Betreiber sieht ihre Einträge nicht automatisch.
-- Browserdaten können gelöscht werden, und lokale Daten sind noch nicht verschlüsselt. Keine echten personenbezogenen Kundeninformationen verarbeiten.
-- Die App ersetzt keine Buchhaltungs-, Rechnungs- oder Datenschutzsoftware; Steuerberechnungen sind vereinfachte Überschläge.
-- Eine zuvor gemeldete Defender-Warnung zur Android-Test-APK ist **noch nicht abschließend geklärt**. Diese ZIP ist für Web-Tests, nicht für die Android-Test-APK.
-
-## Bekannte Grenzen
-
-- Kundenverwaltung „Aufträge“ und die bisherige Gutachter-Schadenaktenverwaltung sind vorerst getrennte Verzeichnisse.
-- Auftragsübersichten sind keine rechtsgültigen Rechnungen. Keine Rechnungsnummernpflicht, Pflichtangaben oder GoBD-Revisionssicherheit implementiert.
-- In der Druckansicht kann auf manchen Mobilbrowsern das Öffnen eines Fensters blockiert werden.
-- Wiederkehrende Zahlungen und Importanalyse sind weiterhin Testfunktionen; Kontoauszüge können falsch gelesen werden.
+- JS-Syntax der vier Dateien geprüft.
+- Isolierter Browser-Klicktest mit simuliertem Browser-Fotospeicher: 30 Schadenfotos und 30 Auftragsfotos hochgeladen, wiederhergestellt und im Auftrag gedruckt. Kein JavaScript-Laufzeitfehler im Test.
+- A4-Schaden-PDF mit 30 Bildern und Reparaturkostenpositionen erzeugt und PDF-Integrität geprüft: 17 Seiten.
+- **Nicht getestet:** Realer GitHub-Pages-Cache auf deinem iPhone und Capacitor APK in BlueStacks; diese Tests bitte erst mit Testdaten durchführen.

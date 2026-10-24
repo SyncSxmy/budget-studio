@@ -1,20 +1,11 @@
-BUDGET STUDIO – KURZANLEITUNG ZUM TESTEN
+BUDGET STUDIO 0.9.4 – KURZE TESTANLEITUNG
 
-1. Öffne den Link, den du bekommen hast, am Handy oder PC.
-2. Lege einen privaten Haushalt an oder, wenn du die Firmenfunktionen testen möchtest, einen Geschäftshaushalt.
-3. Auf der Startseite siehst du deine Übersicht. Über „Buchungen“ kannst du Beträge erfassen.
-4. Unter „Mehr → Hilfe & erste Schritte“ findest du eine einfache Anleitung und einen Knopf für ERFUNDENE Beispieldaten.
-5. Für einen Geschäftshaushalt: „Übersicht → Aufträge & Kunden“. Erst Kunden anlegen, dann Auftrag erstellen, Status ändern und ausdrucken.
-6. Über „Mehr → Daten & Einstellungen“ kannst du deine Daten als JSON-Datei sichern.
+1. Öffne den Link in deinem Browser.
+2. Erstelle einen privaten Haushalt oder einen Geschäftshaushalt. Du benötigst keine echten persönlichen Daten.
+3. Klicke auf „Übersicht“. Dort findest du die wichtigsten Bereiche.
+4. Geschäftshaushalt: „Aufträge & Kunden“ → Kunde hinzufügen → Auftrag erstellen → Preise/Leistungen eintragen → bis zu 30 Testfotos hinzufügen → „Drucken / als PDF speichern“.
+5. Für Gutachter: unter Betriebsarten „Gutachter/Kfz-Sachverständige“ auswählen, eine Kundenakte und einen Schadenfall erstellen. Unter „Reparaturkosten berechnen“ kannst du Preise manuell eintragen und bis zu 30 Testfotos ergänzen.
+6. Für Hilfe: „Mehr → Hilfe & erste Schritte“.
+7. Tipp: „Mehr → Daten & Einstellungen“ → JSON-Sicherung mit Fotos erstellen, bevor du das Gerät wechselst.
 
-BITTE BEACHTEN:
-Diese Testversion ist noch nicht für echte Bankdaten oder Kundendaten geeignet.
-Benutze ausschließlich erfundene Beträge, Namen und Bilder.
-Auf jedem Gerät werden Daten getrennt gespeichert. Es gibt noch keine Synchronisierung.
-
-Dein Feedback hilft uns besonders bei:
-- Welche Schaltfläche war nicht sofort verständlich?
-- Konntest du ohne Erklärung einen Haushalt und eine Buchung anlegen?
-- Sind Schriftgrößen und Kontraste gut lesbar?
-- Bei Betrieben: Konntest du einen Kunden und Auftrag anlegen und die Übersicht drucken?
-- Was sollte als Nächstes verbessert werden?
+WICHTIG: Dies ist eine unfertige Testversion. Bitte NUR erfundene Daten und harmlose Testbilder benutzen. Keine echten Kontoauszüge, Kundenakten oder Schadensfotos! Es gibt keine echte Bank- oder FIN-Anbindung. Fotos werden verkleinert und unverschlüsselt nur auf deinem Gerät gespeichert.
