@@ -1,11 +1,12 @@
-# Budget Studio 0.4 – Design-Testversion
+# Budget Studio 0.5 – Mobile Redesign
 
-Neue Optik: Premium-Kennzahlen, responsives Dashboard, mobile Navigation, Diagrammflächen und Offline-Hinweis. Bestehendes Datenschema `budget-studio-v1` bleibt unverändert.
+Deutlich neues Layout: feststehende untere Navigation auf iPhone, große Kontostandskarte, neue KPI-Karten, Schnellbuchungs-Knopf und Desktop-Seitenleiste. Bestehendes Datenformat `budget-studio-v1` unverändert.
 
-## Aktualisierung auf GitHub Pages
-1. Vorher in der App unter **Daten** eine JSON-Sicherung exportieren und sicher ablegen.
-2. Alle Dateien aus diesem Ordner in die **Wurzel** des GitHub-Repositories hochladen (vorhandene Dateien ersetzen).
-3. Nach GitHub-Pages-Deployment die Seite mit Internet öffnen und neu laden; die installierte App danach neu starten. Service Worker können ein zweites Laden benötigen.
-4. Erst online mit Testdaten prüfen, danach im Flugmodus.
+## Update
+1. In Version 0.4 JSON-Sicherung exportieren und separat aufbewahren.
+2. Alle sieben Dateien im GitHub-Repository aktualisieren.
+3. GitHub Pages Deployment abwarten. Mit Internet die HTTPS-Adresse in Safari neu laden; die installierte App schließen und erneut öffnen.
+4. Danach offline testen. Keine Browserdaten löschen oder App deinstallieren.
 
-**Wichtig:** Nicht die Website-Daten löschen oder die App deinstallieren, solange keine erfolgreich geprüfte Datensicherung vorliegt. Lokal gespeicherte Daten synchronisieren sich nicht zwischen Geräten. GitHub Pages ist eine öffentliche Testumgebung, keine Zugriffssicherung oder Lizenzkontrolle. Diese Version ist weiterhin ein Prototyp.
+## Hinweise
+Nur Testversion. Noch keine native iOS-App. Lokal gespeicherte Daten können beim Löschen von Website-Daten verloren gehen. Daten werden nicht zwischen Geräten synchronisiert.
