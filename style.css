@@ -359,3 +359,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
  .photo-panel .assessor-photo-footer{align-items:flex-start;flex-direction:column}
  .photo-panel .assessor-photo-footer>div{width:100%;justify-content:flex-end}
 }
+
+/* 0.9.5 optional beta cloud sign-in. Local datasets remain untouched. */
+#bs-account-dialog{width:min(94vw,480px);max-height:88dvh;overflow:auto;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:23px;padding:22px;box-shadow:0 20px 60px #0005}
+#bs-account-dialog::backdrop{background:#0c1527ae}
+.bs-account-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.bs-account-dialog-head h2{margin:4px 0}.bs-account-dialog-head button{font-size:25px;padding:4px 12px}
+.bs-auth-banner{background:var(--soft);border-radius:15px;padding:16px;margin-bottom:16px;font-size:14px;line-height:1.6}.bs-auth-banner p{margin:5px 0}
+.bs-auth-form{display:grid;gap:14px;margin-bottom:13px}
+.bs-auth-form label{display:grid;gap:6px;font-size:14px;font-weight:700}
+.bs-auth-form input,.bs-auth-form select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--panel);color:var(--ink)}
+.bs-auth-form button{min-height:48px}.bs-auth-form button.primary{color:#fff}
+#bs-account-message{padding:12px;border-radius:12px;background:var(--soft);margin-bottom:12px;font-size:13px;overflow-wrap:anywhere}
+#bs-account-message[data-kind=error]{border:1px solid #d97676;background:color-mix(in srgb,#d97676 14%,var(--panel))}
+#bs-account-message[data-kind=ok]{border:1px solid #62a37b}
+.bs-workspace-list{display:grid;gap:9px;margin:10px 0 20px;max-height:240px;overflow:auto}
+.bs-workspace-item{background:var(--soft);padding:12px;border-radius:12px;display:grid;gap:5px}
+.bs-workspace-item small{letter-spacing:0;overflow-wrap:anywhere;font-weight:400}
+@media(max-width:600px){#bs-account-dialog{padding:16px;max-height:85dvh}}

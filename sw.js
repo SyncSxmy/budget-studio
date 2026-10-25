@@ -1,5 +1,5 @@
-const CACHE='budget-studio-offline-v9-4-fotos-kalkulation';
-const ASSETS=['./index.html','./style.css?v=094a','./app.js?v=094a','./media-extra.js?v=094a','./business-extra.js?v=094a','./orders-extra.js?v=094a','./icon.svg','./manifest.webmanifest'];
+const CACHE='budget-studio-offline-v9-5-fotos-kalkulation';
+const ASSETS=['./index.html','./style.css?v=095','./app.js?v=095','./auth-extra.js?v=095','./media-extra.js?v=095','./business-extra.js?v=095','./orders-extra.js?v=095','./icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('budget-studio-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{const req=event.request,url=new URL(req.url);if(req.method!=='GET'||url.origin!==self.location.origin)return;
