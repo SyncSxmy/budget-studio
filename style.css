@@ -377,3 +377,52 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .bs-workspace-item{background:var(--soft);padding:12px;border-radius:12px;display:grid;gap:5px}
 .bs-workspace-item small{letter-spacing:0;overflow-wrap:anywhere;font-weight:400}
 @media(max-width:600px){#bs-account-dialog{padding:16px;max-height:85dvh}}
+
+/* 0.9.6 – editable automatic tool checklist */
+.toolplan-panel{display:grid;gap:14px}
+.toolplan-panel h3{margin:0}
+.toolplan-panel p{margin:0}
+.toolplan-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.toolplan-controls label{display:grid;gap:5px;font-size:13px;font-weight:700;width:170px;max-width:45%}
+.toolplan-controls input{width:100%;min-height:45px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--ink);padding:8px 10px}
+.toolplan-controls button{min-height:45px}
+.toolplan-synopsis{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;line-height:1.45}
+.toolplan-synopsis>b{font-weight:800}
+.toolplan-synopsis>span{color:var(--muted)}
+.toolplan-synopsis .toolplan-progress{margin-left:auto;font-weight:800;color:var(--ink)}
+.toolplan-list{display:grid;gap:9px;margin:12px 0}
+.toolplan-item{display:grid;grid-template-columns:36px minmax(0,1fr) 80px 34px;align-items:center;gap:9px;padding:10px 10px;background:var(--soft);border:1px solid var(--line);border-radius:13px}
+.toolplan-item .toolplan-check{display:grid;place-items:center}
+.toolplan-item .toolplan-check input{width:22px;height:22px;accent-color:var(--accent);cursor:pointer}
+.toolplan-item-body{min-width:0;display:grid;gap:3px}
+.toolplan-item-name{width:100%;padding:6px 8px!important;min-height:36px!important;font-size:14px;font-weight:750;border:1px solid transparent!important;border-radius:8px!important;color:var(--ink);background:transparent!important}
+.toolplan-item-name:focus{border-color:var(--accent)!important;background:var(--panel)!important}
+.toolplan-item-body small{font-size:11px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere;padding-left:8px}
+.toolplan-item-qty{display:grid;gap:2px;color:var(--muted);font-size:11px}
+.toolplan-item-qty input{width:100%;min-height:36px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);padding:5px 8px;text-align:center}
+.toolplan-item [data-tool-remove]{padding:3px!important;min-width:32px!important;min-height:32px!important;font-size:22px;line-height:1;border:1px solid var(--line);background:var(--panel);color:var(--muted)}
+.toolplan-add{display:flex;align-items:end;gap:9px;flex-wrap:wrap}
+.toolplan-add label{flex:1 1 190px;display:grid;gap:5px;font-size:13px;font-weight:700}
+.toolplan-add input{width:100%;min-height:45px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:9px}
+.toolplan-add button{min-height:45px}
+.toolplan-warnings{display:grid;gap:7px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--muted);background:var(--soft)}
+.toolplan-stale{border:1px solid #ca9a5f;border-radius:10px;padding:12px;font-size:13px;color:var(--ink)}
+.toolplan-panel .toolplan-disclaimer{font-size:12px;line-height:1.55;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:560px){.toolplan-item{grid-template-columns:26px minmax(0,1fr) 60px 30px;gap:5px;padding:8px 5px}.toolplan-item-body small{font-size:10px}.toolplan-item-qty input{padding:5px 2px}.toolplan-item-name{font-size:13px;padding:5px!important}.toolplan-add button{width:100%}.toolplan-controls label{width:100px}}
+
+/* 0.9.6: one consistent financial reporting period across dashboard and calendar */
+.finance-period-header{display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between;margin:12px 0 18px}
+.finance-cycle-select{display:flex;flex-direction:column;gap:5px;color:var(--ink);font-size:.88rem;min-width:210px;flex:1}
+.finance-cycle-select select{width:100%;max-width:390px}
+.finance-period-nav{display:flex;align-items:center;gap:10px;justify-content:center;flex:1;min-width:220px}
+.finance-period-nav>div{display:flex;flex-direction:column;text-align:center;min-width:175px;line-height:1.3}
+.finance-period-nav b{font-size:.95rem}.finance-period-nav small{color:var(--muted);font-size:.74rem}
+.finance-period-nav button{border:1px solid var(--line);background:var(--card);border-radius:11px;min-width:43px;height:43px;font-size:1.45rem;cursor:pointer;color:var(--ink)}
+.finance-period-nav .nav-empty{width:43px;flex-shrink:0}
+.finance-category-details{margin-top:20px;display:grid;gap:8px}.finance-category-details h4{margin:0 0 2px}
+.finance-category-detail{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.finance-category-detail>summary{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:12px;cursor:pointer;list-style:none}
+.finance-category-detail>summary::-webkit-details-marker{display:none}.finance-category-detail>summary span{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}.finance-category-detail>summary small{color:var(--muted)}
+.finance-category-items{padding:4px 12px 10px}.finance-entry{display:flex;align-items:start;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:.87rem}.finance-entry span{min-width:0;overflow-wrap:anywhere}.finance-entry small{margin-right:8px;color:var(--muted);white-space:nowrap}.finance-entry b{white-space:nowrap}
+@media(max-width:430px){.finance-period-header{flex-direction:column;align-items:stretch}.finance-period-nav{width:100%;justify-content:space-between}}

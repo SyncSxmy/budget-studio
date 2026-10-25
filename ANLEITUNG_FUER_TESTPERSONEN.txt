@@ -1,11 +1,11 @@
-BUDGET STUDIO 0.9.4 – KURZE TESTANLEITUNG
+BUDGET STUDIO 0.9.6 – KURZE TESTANLEITUNG
 
-1. Öffne den Link in deinem Browser.
-2. Erstelle einen privaten Haushalt oder einen Geschäftshaushalt. Du benötigst keine echten persönlichen Daten.
-3. Klicke auf „Übersicht“. Dort findest du die wichtigsten Bereiche.
-4. Geschäftshaushalt: „Aufträge & Kunden“ → Kunde hinzufügen → Auftrag erstellen → Preise/Leistungen eintragen → bis zu 30 Testfotos hinzufügen → „Drucken / als PDF speichern“.
-5. Für Gutachter: unter Betriebsarten „Gutachter/Kfz-Sachverständige“ auswählen, eine Kundenakte und einen Schadenfall erstellen. Unter „Reparaturkosten berechnen“ kannst du Preise manuell eintragen und bis zu 30 Testfotos ergänzen.
-6. Für Hilfe: „Mehr → Hilfe & erste Schritte“.
-7. Tipp: „Mehr → Daten & Einstellungen“ → JSON-Sicherung mit Fotos erstellen, bevor du das Gerät wechselst.
+1. Nutze nur erfundene Testdaten und harmlose Testbilder. Vor Updates: Datensicherung unter Mehr → Daten & Einstellungen einschließlich Fotos erstellen.
+2. Privat / Haushalt: Übersicht → Abrechnungszeitraum wählen (1.–Monatsende oder 15.–14. Folgemonat). Mit den Pfeilen frühere Monate öffnen.
+3. Ausgaben nach Kategorie: Kategorie aufklappen und Buchungen vergleichen. Der Sechs-Monats-Verlauf nutzt dieselben Monatsgrenzen.
+4. Planung → Abos automatisch erkennen: Mehrere gleichartige, regelmäßige Zahlungen als Test erfassen oder importieren. Prüfe alle vorgeschlagenen Abos selbst.
+5. Geschäft → Aufträge & Kunden: Testkunden erstellen, Auftrag „20 m² Kalksandstein mauern“ oder „50 m² Rollrasen verlegen“ anlegen. Werkzeugliste bearbeiten, abhaken und im Auftrag speichern; PDF-Druckansicht prüfen.
+6. Gutachter: Betriebsart „Gutachter/Kfz-Sachverständige“ auswählen, Test-Schadenfall anlegen, Reparaturkalkulation und bis zu 30 Testfotos prüfen.
+7. Mehr → Cloud-Konto (Beta): nur separate Testkonten; Daten sind bislang NICHT synchronisiert.
 
-WICHTIG: Dies ist eine unfertige Testversion. Bitte NUR erfundene Daten und harmlose Testbilder benutzen. Keine echten Kontoauszüge, Kundenakten oder Schadensfotos! Es gibt keine echte Bank- oder FIN-Anbindung. Fotos werden verkleinert und unverschlüsselt nur auf deinem Gerät gespeichert.
+WICHTIG: Entwicklungs-Testversion. Weder echte Bankanbindung noch vollständige Verschlüsselung. Werkzeugermittlung erfolgt offline durch Regeln, nicht durch echte KI. Bitte keine echten Bankdaten, Kundenakten oder Schadensfotos verwenden.
