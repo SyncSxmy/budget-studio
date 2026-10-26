@@ -1,4 +1,4 @@
-BUDGET STUDIO 0.9.6.1 – KURZE TESTANLEITUNG
+BUDGET STUDIO 0.9.7 – KURZE TESTANLEITUNG
 
 1. Nutze nur erfundene Testdaten und harmlose Testbilder. Vor Updates: Datensicherung unter Mehr → Daten & Einstellungen einschließlich Fotos erstellen.
 2. Privat / Haushalt: Übersicht → Abrechnungszeitraum wählen (1.–Monatsende oder 15.–14. Folgemonat). Mit den Pfeilen frühere Monate öffnen.

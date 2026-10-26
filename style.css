@@ -447,3 +447,22 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .business-finance-title{margin-top:24px!important}.home-tool-list .toolplan-item{min-width:0}
 @media(max-width:690px){.business-home-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.business-home-action{min-height:82px;padding:12px}.home-tool-card{padding:15px!important}.home-tool-head h3{font-size:17px}}
 @media(max-width:370px){.home-tool-controls{grid-template-columns:1fr}.home-tool-add{grid-template-columns:1fr}.home-tool-retry{font-size:10px}}
+
+/* 0.9.7: Password-protected local vault + portable encrypted backup */
+#bs-vault-dialog{width:min(450px,calc(100% - 24px));max-width:none;max-height:min(92vh,900px);border:1px solid var(--line);border-radius:22px;padding:0;background:var(--panel);color:var(--ink);box-shadow:0 30px 100px #0008;overscroll-behavior:contain}
+#bs-vault-dialog::backdrop{background:#06101eeb;backdrop-filter:blur(12px)}
+.bs-vault-form{padding:26px;display:grid;gap:14px}
+.bs-vault-icon{font-size:38px;text-align:center}
+.bs-vault-form h2{margin:0;font-size:23px;text-align:center;color:var(--ink)}
+.bs-vault-form p{font-size:13px;line-height:1.6;margin:0}
+.bs-vault-form label{display:grid;gap:7px;font-weight:700;font-size:13px;color:var(--ink)}
+.bs-vault-form input{width:100%;min-height:46px;padding:12px;background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:12px;font-size:16px}
+.bs-vault-actions{display:flex;gap:10px;justify-content:flex-end}
+.bs-vault-actions button{min-height:44px;flex:1}
+#bs-vault-message{padding:10px;border-radius:10px;color:#9c321c;background:#ffebe4;overflow-wrap:anywhere}
+#bs-vault-message[hidden],#bs-vault-repeat-line[hidden]{display:none!important}
+#bs-vault-save-status{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 76px);left:50%;transform:translateX(-50%);z-index:30;padding:9px 14px;background:#194a38;color:#fff;border-radius:40px;box-shadow:0 7px 25px #0004;font-size:11px;font-weight:700;max-width:94%;text-align:center;pointer-events:none}
+#bs-vault-save-status[data-state=error]{background:#a52b2b}
+#bs-vault-save-status[data-state=saving]{background:#785d25}
+.plaintext-backup-details{padding:12px;border:1px dashed var(--line);border-radius:12px}
+.plaintext-backup-details summary{cursor:pointer;font-size:13px;font-weight:650}

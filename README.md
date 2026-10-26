@@ -1,60 +1,41 @@
-# Budget Studio 0.9.6.1 – Übersichtlicher Business-Start und Werkzeug-Schnellstart (TEST)
+# Budget Studio 0.9.7 – Lokaler Datentresor & verschlüsselte Sicherungen (BETA)
 
+**Sicherheitsstatus: experimentelle Testversion – kein unabhängiger Sicherheitstest. Bitte weiterhin nur Testdaten verwenden.** Die verschlüsselte Cloud-Synchronisierung, eine echte Bankverbindung und die sichere Native-App-Integration sind **nicht** enthalten. Es wurde kein Benutzer- oder Finanzdatensatz nach Supabase übertragen.
 
-**Sicherheitsstatus:** Entwicklungs-/Testversion. Keine echte Bankverbindung, keine vollständige lokale Verschlüsselung und noch keine Cloud-Synchronisation von Konten, Buchungen, Kunden oder Fotos. Bitte keine vertraulichen echten Daten erfassen. Die Cloud-Anmeldung bleibt Beta.
+## Neu
 
-## Neu in 0.9.6
+- **Verschlüsselte Datensicherung inklusive vorhandener Fotos** (`.bsafe`) unter **Mehr → Daten & Einstellungen**.
+- Jeder Export bekommt ein eigenes Passwort. Die Sicherung nutzt **AES-256-GCM** mit zufälligem 12-Byte-Nonce und **PBKDF2-HMAC-SHA256** (600.000 Iterationen, zufälliges 16-Byte-Salt). AES-GCM prüft gleichzeitig die Datenintegrität.
+- **Lokaler Datentresor (freiwillig einschaltbar):** Haushalte, Buchungen, Business-Aufträge, Schadenakten und Bildbeschreibungen liegen danach AES-GCM-verschlüsselt in IndexedDB. Fotos aus dem separaten lokalen Bilder-Speicher werden einzeln verschlüsselt in den Tresor übertragen.
+- Beim nächsten Start fragt die App nach dem Tresorpasswort. Falsche Passwörter und beschädigte Daten werden abgewiesen.
+- Alte JSON-Sicherungen lassen sich weiterhin importieren. Einen Klartext-Export bietet die App nur noch für die **nicht** mit dem Tresor gesicherte Testinstallation nach ausdrücklicher Warnung an.
+- Der Tresor bestätigt asynchrone Speichervorgänge und zeigt Fehler sichtbar an. Beim Verlassen einer Seite mit ungespeicherten Änderungen wird gewarnt; Browser können trotzdem abrupt beendet werden.
 
-## Neu in 0.9.6.1
+## Sicheres Update von 0.9.6.1
 
-- **Direkt auf Start im Geschäftshaushalt**: Schnellaktionen für Werkzeugliste, Auftrag, Kunden sowie Gutachten oder Materialrechner. Ohne Kundenanlage lassen sich Werkzeuglisten direkt erzeugen.
-- Tätigkeit mit Menge eingeben, z. B. `20 m² Kalksandstein mauern`, Personenanzahl wählen und auf „Werkzeuge ermitteln“ tippen. Werkzeugmenge, Bezeichnungen und Häkchen sind bearbeitbar; Liste kann kopiert werden.
-- **In Auftrag übernehmen**: Erst beim ausdrücklichen Übernehmen wird auf die Auftragsverwaltung gewechselt. Ohne Kunden öffnet sich zunächst die Testkunden-Erstellung, danach der vorausgefüllte Auftrag. Werkzeugliste und Änderungen werden bei Auftragsspeicherung gesichert.
-- Die Startseitenliste ist bis zum Speichern eines Auftrags nur ein **flüchtiger Entwurf im geöffneten App-Fenster**. Browser neu starten = Entwurf kann verloren gehen. Bisherige Aufträge bleiben unverändert.
-- Mehr Übersicht: Die Geschäftsauswertung folgt nach dem Schnellstart. Die Hauptnavigation heißt jetzt „Start“ statt „Übersicht“.
-- **Keine echte KI**: Weiterhin lokale regelbasierte Vorschläge und keine automatische Material- oder Gefährdungsplanung.
+1. In der bisherigen App **Mehr → Daten & Einstellungen** öffnen und eine vollständige Datensicherung **mit Fotos** erstellen. Prüfen, dass die Datei tatsächlich vorhanden ist, und sicher verwahren.
+2. Die ZIP entpacken. **Alle 16 Dateien** einschließlich `crypto-extra.js` ins Repository `SyncSxmy/budget-studio` hochladen, bestehende Dateien ersetzen; nicht ZIP als eine Datei hochladen.
+3. GitHub Pages mit bestehender Internetverbindung öffnen: `https://syncsxmy.github.io/budget-studio/?v=097a`. Einmal neu laden. In der Fußzeile sollte **0.9.7** stehen.
+4. Zuerst auf **Mehr → Daten & Einstellungen → Verschlüsselte Sicherung inklusive Fotos herunterladen** klicken. Ein **starkes, eigenes Passwort** mit mindestens 12 Zeichen setzen und die `.bsafe` speichern. Ein kurzer Test mit harmlosen Daten auf einer zweiten Testinstallation ist ratsam.
+5. Erst danach freiwillig **Lokale Daten verschlüsseln** auswählen. Für den Tresor ein eigenes langes Passwort vergeben und sicher aufbewahren. Die App schreibt und prüft zuerst verschlüsselte Daten, bevor bisherige Klartextdaten aus dem verwendeten Browser-Speicher gelöscht werden.
+6. App schließen/neu starten: Tresor entsperren. Ein falsches Passwort darf ihn nicht öffnen. Ein neu angelegter Testeintrag muss nach einem erneuten Start noch da sein.
 
-## Installation (Web)
+## Ganz wichtige Grenzen
 
-1. Vor dem Update JSON-Backup mit Fotos anlegen. Browserdaten NICHT löschen.
-2. Alle **15 Dateien** aus dem ZIP ins Root-Verzeichnis des Test-Repositories hochladen, einschließlich **`home-tools.js`**.
-3. Die App bei bestehender Internetverbindung unter `https://syncsxmy.github.io/budget-studio/?v=096c` neu öffnen und unten „0.9.6.1“ prüfen.
+- **Passwort vergessen = lokaler Tresor nicht mehr entschlüsselbar.** Der Anbieter kann das Passwort nicht zurücksetzen. Nur eine separat verwahrte `.bsafe` mit bekanntem **Backup-Passwort** kann die Daten retten: Die gesperrte Testinstallation zunächst vollständig zurücksetzen (dadurch wird der lokale Tresor endgültig gelöscht), dann in einer frischen App die externe `.bsafe` importieren. **Nie den Browserspeicher löschen, bevor die externe Sicherungsdatei kontrolliert vorhanden ist!**
+- **Die Sicherung bleibt notwendig**, auch mit Tresor: Wenn iOS/Android Browserdaten automatisch löscht oder die App deinstalliert wird, kann der lokale Tresor verschwinden.
+- Bestehende **bereits heruntergeladene Klartext-JSON-Backups, Betriebssystem-Backups, Kopien auf anderen Geräten** werden durch die Migration **nicht** nachträglich verschlüsselt. Sie müssen separat geschützt/entsorgt werden.
+- Der aktuelle Cloud-Testlogin speichert kurzlebige Anmeldedaten im Sitzungsspeicher des Browsers und ist **nicht Teil des Tresors**. Noch keine Cloud-Finanzdaten synchronisieren.
+- Verschlüsselung im Browser schützt gegen das einfache Auslesen lokaler Dateien, **nicht** gegen Schadsoftware, kompromittierte Browser, bösartige Skripte oder die Nutzung eines entsperrten Geräts. Das ist **noch kein Nachweis einer DSGVO-konformen Gesamtanwendung**.
+- Auf großen iPhone-Datenbeständen kann die Migration wegen **zu wenig vorübergehend freiem Speicher** scheitern. In diesem Fall bleiben die bisherigen Klartextdaten bestehen. Keinesfalls Browserdaten löschen, bevor eine wiederherstellbare `.bsafe` extern gesichert ist.
+- Eine Rückkehr zu einer alten App-Version **nach Tresor-Aktivierung** wird nicht unterstützt; ältere App-Versionen können den Tresor nicht lesen.
+- Wenn die App „Speichern fehlgeschlagen“ meldet, **nicht schließen**, sondern Fehler beheben und eine Sicherung erstellen.
+- Die bisherige Fotoverkleinerung bleibt bestehen: Für echte Gutachterfälle muss eine unveränderte Originalbildarchivierung separat entwickelt werden.
 
-## Installation (Android)
+## Teststatus
 
-Das Android-Projekt enthält denselben Web-Code unter `www/`; die APK wie gewohnt über GitHub Actions bauen. Android-Build und iPhone-PWA müssen noch auf echten Geräten geprüft werden.
+- Geprüft mit Node.js/WebCrypto-Tests: Verschlüsselung/Entschlüsselung, Falschpasswort, beschädigte Datei, Migration, verschlüsselte Fotos, Änderungs-Speicherung, Sperren/Entsperren.
+- Geprüft: App-Oberfläche per isoliertem Chromium-Test (Start und Sicherheitsdialog ohne JavaScript-Fehler).
+- **Nicht geprüft:** der vollständige Ablauf auf iOS Safari/iPhone, Android/BlueStacks, mit großen realen Dateibeständen oder eine externe Sicherheitsprüfung.
 
-# Budget Studio 0.9.6.1 – Übersichtlicher Business-Start und Werkzeug-Schnellstart (TEST)
-
-
-**Sicherheitsstatus:** Entwicklungs-/Testversion. Keine echte Bankverbindung, keine vollständige lokale Verschlüsselung und noch keine Cloud-Synchronisation von Konten, Buchungen, Kunden oder Fotos. Bitte keine vertraulichen echten Daten erfassen. Die Cloud-Anmeldung bleibt Beta.
-
-## Neu in 0.9.6
-
-1. **Aufträge → Werkzeugassistent.** Neuer oder vorhandener Auftrag: Tätigkeit, Beschreibung oder Leistungsposition eingeben, z. B. `20 m² Kalksandstein mauern` oder `50 m² Rollrasen verlegen`. Die App erstellt automatisch eine Werkzeug-Checkliste, berücksichtigt erkennbare m²-Angaben und die einstellbare Anzahl von Personen. Du kannst Werkzeuge, Anzahlen und Häkchen ändern. Die Liste wird zum Auftrag gespeichert und in der Druck-/PDF-Ansicht ausgegeben. Unterstützte Muster u. a. Maurer, Rollrasen/Garten, Beton, SHK, Dach, Maler, Fliesen, Trockenbau, Pflaster, Böden, Gartenpflege, Reinigung, Elektro, Catering und Kfz-Schadenaufnahme. **Dies ist derzeit eine lokale, regelbasierte Vorschlagserkennung – KEIN echter KI-Dienst, keine Sicherheits-/Fachplanung und kein Materialbedarf.** Für beliebige neue Tätigkeiten folgt eine datenschutzgerecht angebundene KI später.
-2. **Übersicht / Business-Dashboard / Finanzkalender → Abrechnungszeitraum.** Auswählbar `1. bis Monatsende` oder `15. bis 14. des Folgemonats` (z. B. 15.10.–14.11.). Die Wahl wird pro Haushalt/Betrieb gespeichert. Pfeile blättern rückwärts; vorwärts nur bis zum aktuell begonnenen Zeitraum.
-3. **Auswertungen.** Dashboard-KPIs, Kategorien und Verlauf der letzten sechs Abrechnungsmonate beruhen auf denselben Datumsgrenzen. Kategorien können aufgeklappt werden; man sieht die Einzelbuchungen. Auch im Business-Dashboard gibt es eine sechmonatige Übersicht und Kategorie-Details. Einmal importierte und manuell korrigierte Buchungen werden aus dem gleichen lokalen Datenbestand berechnet.
-4. **Abo-Finder.** Erkennt jetzt Wiederholungen auch aus Buchungstexten, sofern keine Händlerinformation gespeichert wurde. Kleine Preisschwankungen und monatliche/vierteljährliche/jährliche Intervalle werden berücksichtigt. Treffer sind **nur Vorschläge**, keine automatisch angelegten Kontobuchungen. Bestehende Regeln können bei späterem Kontoauszug-Import immer noch Doppelbuchungen verursachen; Warnungen und Abstimmung sind wichtig.
-
-## Für die Web-App
-
-1. Vorher in der vorhandenen App unter **Mehr → Daten & Einstellungen** eine JSON-Datensicherung **einschließlich Fotos** erstellen und sicher aufbewahren. Bei größeren Backups genügend Speicherplatz vorsehen.
-2. Diesen ZIP-Ordner entpacken und **alle 14 Dateien** aus dem entpackten Web-Ordner in das Root-Verzeichnis des *Test*-GitHub-Pages-Repositories hochladen (nicht in ein zusätzliches Unterverzeichnis). Wichtig: **`tool-planner.js` und `finance-engine.js` sind NEU und erforderlich**.
-3. GitHub Pages nach der Bereitstellung online laden, z. B. `https://syncsxmy.github.io/budget-studio/?v=096b` (wenn Pages dort noch aktiv ist). Browser-Website-Daten NICHT löschen, sonst können lokale Daten und Fotos verloren gehen.
-4. Bei Anzeige einer alten Version einmal mit bestehender Internetverbindung neu laden und die Dateien im Repository prüfen.
-
-## Wichtige Testfälle
-
-- Privathaushalt → Dashboard → `1.–Monatsende` ↔ `15.–14.`; September/Oktober durchblättern; prüfen, dass Einnahmen/Ausgaben/Kategorien und Verlauf denselben Zeitraum nutzen.
-- In Kategorie **Lebensmittel** aufklappen und Einzelbuchungen ansehen; mit „Buchungen“ vergleichen. Ohne künftigen Zeitraum verschwindet der Pfeil nach rechts.
-- Planung → **Abos automatisch erkennen** mit mind. zwei möglichst regelmäßigen importierten Zahlungen und wechselndem Betrag (z. B. zwei Streaming-Abbuchungen). Treffer manuell bestätigen, nicht blind übernehmen.
-- Geschäft → **Aufträge & Kunden** → Testkunde erstellen → Auftrag `20 m² Kalksandstein mauern` erfassen → Werkzeuge, Häkchen und Mengen kontrollieren; Auftrag speichern, erneut öffnen und Druckansicht prüfen. `50 m² Rollrasen verlegen` ausprobieren.
-- Anderer Haushalt/anderer Betrieb: Die ausgewählte Monatsart und die Auftragslisten müssen getrennt bleiben.
-
-## Grenzen und Datenschutz
-
-- Die Werkzeugliste ist **keine überprüfte KI-Fachauskunft**. Maschinen, persönliche Schutzausrüstung, Mengen und Vorschriften vor Ort fachlich prüfen.
-- Die automatische Abo-Erkennung ist heuristisch; manche Zahlungen fehlen, andere können fälschlich wiederkehrend wirken. Bankdaten werden **nicht** live abgerufen.
-- Bestehende lokale Daten werden nicht automatisch verschlüsselt oder synchronisiert. JSON-Backups enthalten Inhalte unverschlüsselt.
-- Bei früheren Kontoauszug-Importen können Einnahmen fehlen; ursprüngliche Bankbelege weiterhin kontrollieren. Die neue Monatslogik repariert keine fehlenden PDF-Buchungen.
-- Das Supabase-Testkonto synchronisiert weiterhin keine Finanzdaten, Kundenakten oder Fotos. Die Anbindung echter Bankkonten und die KI-API erfordern noch separate Backend-Entwicklung.
+Die Entwicklung von Budget Studio bleibt übergangsweise auf GitHub Pages. Später erhält die App eine eigene Website und native iOS-/Android-Veröffentlichungen mit entsprechend abgesicherter Anmeldung und Cloud-Synchronisation.

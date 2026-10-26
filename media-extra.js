@@ -1,6 +1,5 @@
 'use strict';
-/* Budget Studio demo photo storage. Photos are stored only on-device in IndexedDB.
-   No remote server; not encrypted. Test data only. */
+/* Budget Studio test photo storage. In vault mode, photos are encrypted with AES-GCM in a separate IndexedDB; legacy photos are migrated on opt-in. */
 const PHOTO_LIMIT=30;
 const PHOTO_DB_NAME='budget-studio-photo-v1';
 let photoDbPromise;
@@ -15,21 +14,30 @@ function photoOpenDb(){
  return photoDbPromise;
 }
 async function photoPut(id,dataUrl){
+ if(BudgetStudioCrypto.enabled())return BudgetStudioCrypto.savePhoto(id,dataUrl);
  const db=await photoOpenDb();return new Promise((resolve,reject)=>{
   const tx=db.transaction('photos','readwrite');tx.objectStore('photos').put({id,dataUrl});
   tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||Error('Fotospeicher voll oder nicht verfügbar.'));
  });
 }
 async function photoGet(id){
+ if(BudgetStudioCrypto.enabled())return BudgetStudioCrypto.getPhoto(id);
  const db=await photoOpenDb();return new Promise((resolve,reject)=>{
   const tx=db.transaction('photos','readonly'),req=tx.objectStore('photos').get(id);
   req.onsuccess=()=>resolve(req.result?.dataUrl||null);req.onerror=()=>reject(req.error);
  });
 }
 async function photoDelete(id){
+ if(BudgetStudioCrypto.enabled()){await BudgetStudioCrypto.flush();return BudgetStudioCrypto.deletePhoto(id)}
  const db=await photoOpenDb();return new Promise((resolve,reject)=>{
   const tx=db.transaction('photos','readwrite');tx.objectStore('photos').delete(id);
   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+ });
+}
+async function photoClearPlain(){
+ const db=await photoOpenDb();return new Promise((resolve,reject)=>{
+  const tx=db.transaction('photos','readwrite');tx.objectStore('photos').clear();
+  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('Alte Fotos konnten nicht gelöscht werden.'));
  });
 }
 function photoRefs(ws){
@@ -44,7 +52,7 @@ function photoRecord(kind){if(kind==='case')return activeAssessorCase();if(kind=
 function photoGallery(kind,photos){
  const label=kind==='case'?'Schadenfall':'Auftrag';const list=Array.isArray(photos)?photos:[];
  return `<section class="panel photo-panel"><div class="row"><h3>Fotos zum ${label}</h3><span class="pill">${list.length} / ${PHOTO_LIMIT}</span></div>
- <p class="muted">Bis zu 30 Bilder pro ${label}. JPG, PNG oder WebP auswählen. Die Bilder werden verkleinert und nur auf diesem Gerät gespeichert. Beschreibung und Bildreihenfolge erscheinen im Ausdruck.</p>
+ <p class="muted">Bis zu 30 Bilder pro ${label}. JPG, PNG oder WebP auswählen. Die Bilder werden verkleinert und lokal gespeichert${BudgetStudioCrypto.enabled()?' (verschlüsselt)':' (noch unverschlüsselt)'}. Beschreibung und Bildreihenfolge erscheinen im Ausdruck.</p>
  <label class="assessor-photo-picker">＋ Fotos hinzufügen<input type="file" data-photo-upload="${kind}" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple ${list.length>=PHOTO_LIMIT?'disabled':''}></label>
  <div class="assessor-photo-grid">${list.map((p,i)=>`<div class="assessor-photo-card"><img ${p.dataUrl&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(p.dataUrl)?`src="${p.dataUrl}"`:`data-photo-ref="${esc(p.id)}"`} alt="${esc(p.label)}" loading="lazy"><div class="assessor-photo-footer"><span title="${esc(p.label)}">${i+1}. ${esc(p.label)}</span><div><button type="button" class="small-action" data-photo-rename="${esc(p.id)}" data-photo-kind="${kind}" aria-label="Bildbeschreibung bearbeiten">✎</button><button type="button" class="small-action assessor-delete" data-photo-delete="${esc(p.id)}" data-photo-kind="${kind}" aria-label="Foto löschen">×</button></div></div></div>`).join('')||'<p class="muted">Noch keine Fotos hinzugefügt.</p>'}</div>
  <p class="muted photo-storage-note">Tipp: Exportiere vor einem Gerätewechsel eine neue Datensicherung. Ohne Sicherung gehen lokale Fotos beim Löschen der App-Daten verloren.</p></section>`;

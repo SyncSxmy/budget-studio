@@ -155,9 +155,9 @@ let old;try{old=normalizeData(JSON.parse(localStorage.getItem(LEGACY_KEY)))}catc
 // An existing 0.6 workspace means the first household selection has already been completed.
 // On an upgrade from 0.5 (no v2 key), show the selection once to confirm the migrated household.
 let hasSavedWorkspace=false;
-try{hasSavedWorkspace=localStorage.getItem(KEY)!==null}catch{}
+try{hasSavedWorkspace=localStorage.getItem(KEY)!==null||BudgetStudioCrypto.enabled()}catch{}
 let firstSetupPending=false;try{firstSetupPending=!hasSavedWorkspace&&!localStorage.getItem(LEGACY_KEY)}catch{}
-let workspace=loadWorkspace(),storageLocked=!workspace;
+let workspace=BudgetStudioCrypto.enabled()?{version:2,activeId:null,households:[{id:uid(),name:'Datentresor gesperrt',kind:'personal',members:[],data:blank()}]}:loadWorkspace(),storageLocked=!workspace||BudgetStudioCrypto.enabled();
 if(!workspace)workspace={version:2,activeId:null,households:[{id:uid(),name:'Wiederherstellung erforderlich',kind:'personal',members:[],data:blank()}]};
 if(!workspace.activeId||!workspace.households.some(h=>h.id===workspace.activeId))workspace.activeId=workspace.households[0].id;
 let bankImportDraft=null, editingTxId=null, editingDebtId=null, reconcileAccountId=null;
@@ -185,7 +185,13 @@ const round2=n=>Math.round((Number(n)+Number.EPSILON)*100)/100;
 function businessHousehold(){return household()?.kind==='business'}
 function calculateTax(value,mode,rate){const input=round2(value),r=Number(rate);if(!(input>0)||!['gross','net'].includes(mode)||![0,7,19].includes(r))return null;const gross=mode==='gross'?input:round2(input*(1+r/100));const net=mode==='net'?input:round2(gross/(1+r/100));return {net,gross,vat:round2(gross-net),rate:r,mode}}
 
-function save(){if(storageLocked){alert('Der Datenspeicher konnte nicht gelesen werden. Bitte zunächst Browserdaten sichern und prüfen.');return false}try{localStorage.setItem(KEY,JSON.stringify(workspace));return true}catch(e){alert('Speichern nicht möglich (Speicherplatz?). Bitte Datensicherung erstellen.');return false}}
+function save(){
+ if(storageLocked){alert('Der Datenspeicher ist gesperrt oder konnte nicht gelesen werden.');return false}
+ try{
+  if(BudgetStudioCrypto.enabled()){BudgetStudioCrypto.queueSave(workspace);return true;}
+  localStorage.setItem(KEY,JSON.stringify(workspace));return true;
+ }catch(e){alert('Speichern nicht möglich: '+(e.message||e)+' Bitte Datensicherung erstellen.');return false}
+}
 function nameOfHousehold(){return household()?.name||'Mein Haushalt'}
 function householdPicker(){
  document.body.classList.toggle('choosing-household',choosing);
@@ -699,7 +705,7 @@ function acceptSubscription(id){
  if(!save()){state.subscriptions.pop();return}render();
 }
 
-function settings(){return `<h2>Daten & Datenschutz</h2>${householdSettings()}<div class="panel stack"><p>Alle bisherigen Haushalte bleiben lokal in diesem Browser auf diesem Gerät gespeichert. Auch nach einer Cloud-Anmeldung werden sie noch NICHT hochgeladen oder synchronisiert. Löscht du Browserdaten, können die Daten verloren gehen.</p><button id="export">Alle Haushalte inklusive Fotos sichern</button><label>Datensicherung inklusive Fotos wiederherstellen (0.5 bis 0.9.6)<input id="import" type="file" accept="application/json,.json"></label><button id="reset">Diesen Haushalt zurücksetzen</button></div>${businessHousehold()?'<div class="panel"><h3>Gewerke &amp; Projektkalkulationen</h3><p class="muted">Gewerke kannst du jederzeit ändern. Eigene Rechner, Kundenakten und Aufträge werden gesichert. Neue Fotos liegen in einem separaten lokalen Fotospeicher und werden beim JSON-Export mit in die Datei aufgenommen. Speicherplatz beachten!</p><button data-open-view="trades">Betriebsarten verwalten</button></div><div class="panel"><h3>Hinweis zur Umsatzsteuer</h3><p class="muted">Diese Funktion rechnet Nettobeträge, Bruttobeträge und rechnerische Umsatzsteueranteile für 0 %, 7 % oder 19 %. Sie prüft keine Steuerbefreiung, Kleinunternehmerregelung, Reverse Charge, Vorsteuerberechtigung oder Buchführungspflichten. Wiederkehrende automatische Buchungen erhalten derzeit keine Steueraufteilung. Alte Buchungen werden nicht rückwirkend geändert.</p></div>':''}<div class="panel"><h3>Wichtig vor echtem Einsatz</h3><p class="muted">Dies ist eine Testversion, kein geprüftes Finanz-, Buchhaltungs- oder Bankingprodukt. Für Steuererklärungen und Unternehmensbuchhaltung nicht als alleinige Grundlage verwenden. Bitte keine sensiblen echten Daten verwenden, bevor wir Sicherung, Sicherheit und Berechnungen ausführlich getestet haben.</p></div>`}
+function settings(){return `<h2>Daten & Datenschutz</h2>${householdSettings()}<div class="panel stack"><h3>🔐 Verschlüsselung &amp; Sicherung</h3><p>${BudgetStudioCrypto.enabled()?'Der lokale Datentresor ist aktiv: Haushalte, Buchungen und gespeicherte Fotos liegen verschlüsselt auf diesem Gerät. Das Passwort wird nicht gespeichert. Wenn du es vergisst, brauchst du eine externe verschlüsselte Datensicherung.':'Deine App-Daten sind auf diesem Gerät momentan noch unverschlüsselt. Du kannst zuerst eine verschlüsselte Sicherung erstellen und anschließend den lokalen Datentresor aktivieren.'}</p><button class="primary" id="export-encrypted" type="button">🔐 Verschlüsselte Sicherung inklusive Fotos herunterladen</button>${BudgetStudioCrypto.enabled()?'<button id="vault-lock" type="button">🔒 App jetzt sperren</button>':'<button id="vault-enable" type="button">🔒 Lokale Daten verschlüsseln (Datentresor aktivieren)</button>'}<p class="muted">AES-256-GCM mit passwortbasierter Schlüsselableitung. Das Passwort ist nicht wiederherstellbar. Erst Sicherungsdatei sicher verwahren, dann Datentresor einschalten.</p><details class="plaintext-backup-details"><summary>Alte unverschlüsselte JSON-Sicherung (nicht empfohlen)</summary><p class="muted">Diese Datei enthält vertrauliche Haushaltsdaten und sämtliche Fotos im Klartext. Nur für Kompatibilität mit alten Testversionen.</p><button id="export" type="button">Unverschlüsselte JSON-Sicherung exportieren</button></details><label>Sicherung wiederherstellen (.bsafe verschlüsselt oder altes .json)<input id="import" type="file" accept=".bsafe,.json,application/json,application/octet-stream"></label><button id="reset">Diesen Haushalt zurücksetzen</button></div>${businessHousehold()?'<div class="panel"><h3>Gewerke &amp; Projektkalkulationen</h3><p class="muted">Gewerke kannst du jederzeit ändern. Eigene Rechner, Kundenakten und Aufträge werden gesichert. Fotos werden beim verschlüsselten Sicherungsexport mit aufgenommen. Bei aktiviertem Tresor sind neue Fotos auch lokal verschlüsselt. Speicherplatz beachten!</p><button data-open-view="trades">Betriebsarten verwalten</button></div><div class="panel"><h3>Hinweis zur Umsatzsteuer</h3><p class="muted">Diese Funktion rechnet Nettobeträge, Bruttobeträge und rechnerische Umsatzsteueranteile für 0 %, 7 % oder 19 %. Sie prüft keine Steuerbefreiung, Kleinunternehmerregelung, Reverse Charge, Vorsteuerberechtigung oder Buchführungspflichten. Wiederkehrende automatische Buchungen erhalten derzeit keine Steueraufteilung. Alte Buchungen werden nicht rückwirkend geändert.</p></div>':''}<div class="panel"><h3>Wichtig vor echtem Einsatz</h3><p class="muted">Dies ist eine Testversion, kein sicherheitsauditiertes Finanz-, Buchhaltungs- oder Bankingprodukt. Trotz lokalem Datentresor gibt es keine geprüfte Ende-zu-Ende-Verschlüsselung oder verschlüsselte Cloud-Synchronisation. Für Steuererklärungen und Unternehmensbuchhaltung nicht als alleinige Grundlage verwenden. Bitte keine sensiblen echten Daten verwenden, bevor wir Sicherung, Sicherheit und Berechnungen ausführlich getestet haben.</p></div>`}
 function drawChart(){const canvas=document.querySelector('#chart');if(!canvas)return;const ctx=canvas.getContext('2d'),m=new Date().toISOString().slice(0,7),data={};state.transactions.filter(t=>t.type==='expense'&&t.date.slice(0,7)===m).forEach(t=>data[t.category]=(data[t.category]||0)+money(t.amount));const vals=Object.values(data),max=Math.max(...vals,1);ctx.clearRect(0,0,650,210);vals.slice(0,8).forEach((v,i)=>{ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--accent').trim();ctx.fillRect(12,12+i*25,Math.max(1,500*v/max),16);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--ink').trim();ctx.font='13px sans-serif';ctx.fillText(eur(v),520,25+i*25)})}
 function addDemoData(){
  if(!confirm('Erfundene Beispielbuchungen'+(businessHousehold()?' und einen Beispielauftrag':'')+' einfügen? Vorhandene Daten bleiben erhalten.'))return;
@@ -721,7 +727,7 @@ function removeDemoData(){const h=household(),txCount=state.transactions.filter(
  const oldTx=state.transactions,oldOrders=h.orders,oldCustomers=h.orderCustomers;state.transactions=oldTx.filter(t=>t.bsDemo!==true);h.orders=ordersData().filter(o=>o.bsDemo!==true);h.orderCustomers=orderCustomersData().filter(c=>c.bsDemo!==true);if(!save()){state.transactions=oldTx;h.orders=oldOrders;h.orderCustomers=oldCustomers;return}selectedMonth=preferredMonth();render();alert('Beispieldaten entfernt.');}
 function help(){return `<div class="heading"><div><small>EINFACH ERKLÄRT</small><h2>So funktioniert Budget Studio</h2><p class="muted">Du musst kein Finanz- oder Computerprofi sein. Diese Schritte reichen für den Anfang.</p></div></div>
 <div class="simple-steps"><div><span>1</span><div><b>Haushalt auswählen</b><p>„Privat“ für deine Finanzen, „Gemeinsam“ für die Familie, „Geschäft“ für deinen Betrieb.</p></div></div><div><span>2</span><div><b>Konten und Buchungen anlegen</b><p>Unter „Konten“ legst du z. B. ein Girokonto an. Unter „Buchungen“ trägst du Einnahmen oder Ausgaben ein.</p></div></div><div><span>3</span><div><b>Übersicht ansehen</b><p>Die Startseite zeigt dir, was du eingegeben hast. Buchungen lassen sich später bearbeiten.</p></div></div>${businessHousehold()?'<div><span>4</span><div><b>Aufträge verwalten</b><p>Unter „Aufträge & Kunden“ erst einen Kunden speichern, dann einen Auftrag mit Leistungen und Preisen erstellen. Aufträge lassen sich ausdrucken.</p></div></div>':''}</div>
-<div class="panel"><h3>Häufige Fragen</h3><details><summary>Kann ich etwas kaputtmachen?</summary><p>Die Daten bleiben in diesem Browser gespeichert. Vor größeren Änderungen am besten unter „Mehr → Daten & Einstellungen“ eine Sicherung erstellen.</p></details><details><summary>Wo finde ich meine Fixkosten?</summary><p>Unter „Planung“ (bei Firmen unter „Mehr → Finanzplanung“) findest du „Abos & Fixkosten“.</p></details><details><summary>Kann ich echte Bankkonten verbinden?</summary><p>Noch nicht. Zurzeit gibt es einen Kontoauszugsimport. Die direkte Bankverbindung ist geplant.</p></details><details><summary>Wer sieht meine Daten?</summary><p>In dieser Testversion liegen Eingaben nur auf diesem Gerät in diesem Browser. Wir haben noch keine verschlüsselte Cloud. Bitte zum Testen keine vertraulichen Kontoauszüge, Kundenfotos oder echten Personendaten verwenden.</p></details><details><summary>Wie bekomme ich die Daten auf ein anderes Gerät?</summary><p>Eine automatische Synchronisierung gibt es noch nicht. Du kannst deine Haushalte unter „Daten & Einstellungen“ als JSON-Datei sichern und später importieren.</p></details></div>
+<div class="panel"><h3>Häufige Fragen</h3><details><summary>Kann ich etwas kaputtmachen?</summary><p>Die Daten bleiben in diesem Browser gespeichert. Vor größeren Änderungen am besten unter „Mehr → Daten & Einstellungen“ eine Sicherung erstellen.</p></details><details><summary>Wo finde ich meine Fixkosten?</summary><p>Unter „Planung“ (bei Firmen unter „Mehr → Finanzplanung“) findest du „Abos & Fixkosten“.</p></details><details><summary>Kann ich echte Bankkonten verbinden?</summary><p>Noch nicht. Zurzeit gibt es einen Kontoauszugsimport. Die direkte Bankverbindung ist geplant.</p></details><details><summary>Wer sieht meine Daten?</summary><p>Bei aktiviertem lokalem Datentresor sind gespeicherte Haushaltsdaten und Fotos auf diesem Gerät verschlüsselt. Cloud-Synchronisierung und umfassende Sicherheitsprüfungen fehlen weiterhin. Bitte noch keine vertraulichen Daten in der Testversion verwenden.</p></details><details><summary>Wie bekomme ich die Daten auf ein anderes Gerät?</summary><p>Eine automatische Synchronisierung gibt es noch nicht. Du kannst deine Haushalte unter „Daten & Einstellungen“ als verschlüsselte .bsafe-Datei sichern und später importieren.</p></details></div>
 <div class="panel stack"><h3>Zum Ausprobieren: erfundene Beispieldaten</h3><p class="muted">Du kannst einen kleinen Testdatensatz einfügen. So siehst du sofort eine Übersicht – ohne echte persönliche Angaben. Die Beispieldaten lassen sich danach wieder entfernen.</p><div class="settings-actions"><button id="demo-add" type="button" class="primary">Beispieldaten einfügen</button><button id="demo-remove" type="button">Beispieldaten entfernen</button></div></div>
 <div class="panel stack"><h3>Anzeige einstellen</h3><p class="muted">Der einfache Modus nutzt größere Texte und Schaltflächen. Er ist besonders auf dem Handy angenehm.</p><button id="simple-toggle" class="primary" type="button">${simpleMode?'Einfachen Modus ausschalten':'Einfachen Modus einschalten'}</button><button type="button" data-open-view="dashboard">Zurück zur Übersicht</button></div>
 <div class="notice-panel"><b>Bitte nur Testdaten verwenden.</b> Kontostände, Steuerberechnungen und Auftragskalkulationen sind in dieser Vorabversion noch nicht unabhängig geprüft.</div>`}
@@ -798,7 +804,7 @@ if(type==='transactions'&&businessHousehold()){
  delete obj.entryMode;
 }
 const item={id:uid(),...obj};state[type].push(item);if(!save()){state[type].pop();return}if(type==='recurring')applyRecurring();render()});
-app.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+app.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
 if(b.hasAttribute('data-home-jump-tools')){document.querySelector('#home-tool-task')?.focus();return}
 if(b.hasAttribute('data-finance-prev')){selectedMonth=FinanceEngine.shiftMonth(selectedMonth,-1);render();return}
  if(b.hasAttribute('data-finance-next')){const next=FinanceEngine.shiftMonth(selectedMonth,1);if(FinanceEngine.period(next,financeCycle()).start<=dateToday()){selectedMonth=next;render()}return}
@@ -816,10 +822,37 @@ if(b.id==='bank-import-cancel'){bankImportDraft=null;render();return}
 if(b.dataset.acceptSubscription){acceptSubscription(b.dataset.acceptSubscription);return}
 if(b.dataset.openView){setView(b.dataset.openView);return}if(b.dataset.trade){if(b.dataset.trade==='assessor'){setView('assessorClients');return;}selectedTrade=b.dataset.trade;selectedCalculator=null;pendingCalc=null;setView('calculators');return}if(b.dataset.calc){selectedCalculator=b.dataset.calc;pendingCalc=null;setView('calculator');return}if(b.dataset.customCalc){const calc=customOf().find(c=>c.id===b.dataset.customCalc);if(!calc)return;selectedTrade=calc.trade;selectedCalculator='custom:'+calc.id;pendingCalc=null;setView('calculator');return}if(b.dataset.deleteCustom){const h=household();if(!confirm('Eigenen Rechner löschen? Gespeicherte Projektkalkulationen bleiben erhalten.'))return;const before=h.customCalculators;h.customCalculators=before.filter(c=>c.id!==b.dataset.deleteCustom);if(!save())h.customCalculators=before;selectedCalculator=null;setView('planning');return}if(b.dataset.deleteEstimate){const h=household();if(!confirm('Projektkalkulation löschen?'))return;const before=h.estimates;h.estimates=before.filter(x=>x.id!==b.dataset.deleteEstimate);if(!save())h.estimates=before;render();return}
 if(b.dataset.delete){const type=b.dataset.delete,id=b.dataset.id;if(type==='accounts'&&(state.transactions.some(t=>t.accountId===id)||state.recurring.some(r=>r.accountId===id)))return alert('Konto mit Buchungen oder wiederkehrenden Zahlungen kann nicht gelöscht werden.');if(type==='accounts'&&state.accounts.length<=1)return alert('Das letzte Konto kann nicht gelöscht werden.');if(confirm('Eintrag wirklich löschen?')){const before=state[type];state[type]=before.filter(x=>x.id!==id);if(!save())state[type]=before;render()}}
+if(b.id==='vault-enable'){
+ if(BudgetStudioCrypto.enabled())return;
+ if(!confirm('WICHTIG: Erstelle zuerst eine verschlüsselte Sicherung und überprüfe, dass die Datei heruntergeladen wurde. Ohne Tresorpasswort oder Sicherung sind die Daten verloren. Hast du die Sicherung sicher aufbewahrt?'))return;
+ BudgetStudioCrypto.startDialog('enable',async pass=>{
+  const result=await BudgetStudioCrypto.createVault(pass,workspace,photoRefs(workspace),photoGet,photoClearPlain);
+  if(!result.photoCleanupSucceeded)alert('Warnung: Ältere unverschlüsselte Fotos konnten nicht vollständig gelöscht werden. Bitte den Browserspeicher prüfen und keine echten Daten verwenden.');
+  render();
+  alert('Lokaler Datentresor wurde eingerichtet. Die Daten sind verschlüsselt. Beim nächsten Start musst du ihn entsperren.');
+ });return;
+}
+if(b.id==='vault-lock'){
+ try{await BudgetStudioCrypto.flush();BudgetStudioCrypto.lock();location.reload();}
+ catch(e){alert('Die App darf noch nicht gesperrt werden: '+(e.message||e));}
+ return;
+}
+if(b.id==='export-encrypted'){
+ BudgetStudioCrypto.startDialog('backup',async pass=>{
+  // Even if an IndexedDB save failed (e.g. quota), export the in-memory latest state as emergency backup.
+  const backup=await photoExportBackup(workspace);
+  const packed=await BudgetStudioCrypto.encryptBackupJson(JSON.stringify(backup),pass);
+  if(packed.length>160000000)throw Error('Verschlüsselte Sicherung ist zu groß.');
+  const blob=new Blob([packed],{type:'application/octet-stream'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='budget-studio-verschluesselt-'+dateToday()+'.bsafe';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ });return;
+}
 if(b.id==='export'){
+ if(BudgetStudioCrypto.enabled()){alert('Bei aktivem Datentresor sind nur verschlüsselte Sicherungen erlaubt.');return;}
+ if(!confirm('WARNUNG: Diese JSON-Sicherung enthält sämtliche Finanz- und Kundendaten sowie alle Fotos UNVERSCHLÜSSELT. Wirklich erstellen?'))return;
  photoExportBackup(workspace).then(backup=>{
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  if(blob.size>120_000_000){alert('Zu viele große Fotos: Die Sicherung überschreitet 120 MB. Bitte Datenbestand aufteilen.');URL.revokeObjectURL(url);return}a.href=url;a.download='budget-studio-0.9.6-mit-fotos.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  if(blob.size>120_000_000){alert('Zu viele große Fotos: Die Sicherung überschreitet 120 MB. Bitte Datenbestand aufteilen.');URL.revokeObjectURL(url);return}a.href=url;a.download='budget-studio-0.9.7-unverschluesselt.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }).catch(err=>alert('Datensicherung wurde nicht erstellt: '+(err.message||err)));
 } 
 if(b.id==='reset'&&confirm('Alle Konten und Buchungen in diesem Haushalt zurücksetzen? Andere Haushalte bleiben erhalten.')){const prior=household().data;household().data=blank();state=household().data;if(!save()){household().data=prior;state=prior}render()}
@@ -839,23 +872,50 @@ app.addEventListener('change',async e=>{if(e.target.closest('form[data-form="deb
   if(!save()){h.financeCycle=old;selectedMonth=previousMonth;return}
   render();return;
  }
- if(e.target.id==='month-select'){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value>FinanceEngine.monthForDate(dateToday(),financeCycle())?FinanceEngine.monthForDate(dateToday(),financeCycle()):e.target.value;render()}return}if(e.target.id!=='import')return;const file=e.target.files[0];if(!file)return;if(file.size>120_000_000){alert('Sicherung zu groß (maximal 120 MB).');return}try{const data=JSON.parse(await file.text());
+ if(e.target.id==='month-select'){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value>FinanceEngine.monthForDate(dateToday(),financeCycle())?FinanceEngine.monthForDate(dateToday(),financeCycle()):e.target.value;render()}return}
+if(e.target.id!=='import')return;
+const file=e.target.files[0];if(!file)return;
+if(file.size>160_000_000){alert('Sicherung zu groß (maximal 160 MB).');return}
+let parsed;
+try{parsed=JSON.parse(await file.text());}catch{alert('Ungültige Sicherungsdatei.');return;}
+if(BudgetStudioCrypto.looksEncrypted(parsed)){
+ BudgetStudioCrypto.startDialog('restore',async pass=>{const data=await BudgetStudioCrypto.decryptBackup(parsed,pass);await restoreBackupData(data);});
+ return;
+}
+if(!confirm('Diese alte Sicherung ist UNVERSCHLÜSSELT. Trotzdem einlesen?'))return;
+try{await restoreBackupData(parsed)}catch(err){alert(err.message||err)}
+});
+async function restoreBackupData(data){try{
  if(validWorkspace(data)){
   if(!confirm('ALLE jetzigen Haushalte durch diese Sicherung ersetzen? Bitte vorher eine Sicherung deiner jetzigen Daten erstellen.'))return;
   const previous=workspace,restored=JSON.parse(JSON.stringify(data));
   try{await photoImportBackup(restored)}catch(err){alert('Fotos konnten nicht wiederhergestellt werden: '+(err.message||err));return}
   workspace=restored;workspace.households.forEach(h=>h.data=normalizeData(h.data));workspace.activeId=workspace.activeId||workspace.households[0].id;state=household().data;storageLocked=false;
   if(!save()){workspace=previous;state=household().data;return}
+  if(BudgetStudioCrypto.enabled())await BudgetStudioCrypto.flush();
   if(workspace.households.length===1)resumeSingleHousehold();else{openPicker();render()}
   alert('Sicherung aller Haushalte einschließlich enthaltener Fotos wurde importiert.');return
  }
- if(validBackup(data)){if(!confirm('Alte Sicherung (0.5) als NEUEN Haushalt importieren? Vorhandene Haushalte bleiben erhalten.'))return;const newHousehold={id:uid(),name:'Importierter Haushalt',kind:'personal',members:[],data:normalizeData(data)};workspace.households.push(newHousehold);if(!save()){workspace.households.pop();return}openPicker();alert('Alter Datenstand wurde als zusätzlicher Haushalt importiert.');return}
+ if(validBackup(data)){if(!confirm('Alte Sicherung (0.5) als NEUEN Haushalt importieren? Vorhandene Haushalte bleiben erhalten.'))return;const newHousehold={id:uid(),name:'Importierter Haushalt',kind:'personal',members:[],data:normalizeData(data)};workspace.households.push(newHousehold);if(!save()){workspace.households.pop();return}if(BudgetStudioCrypto.enabled())await BudgetStudioCrypto.flush();openPicker();alert('Alter Datenstand wurde als zusätzlicher Haushalt importiert.');return}
  throw Error('Ungültige Sicherung')
-}catch{alert('Datei konnte nicht als gültige Budget-Studio-Sicherung gelesen werden.')}});
+}catch(e){throw Error('Datei konnte nicht wiederhergestellt werden: '+(e.message||e));}}
 // Android preview: keine Web-Service-Worker-Registrierung innerhalb von Capacitor.
 if(!window.Capacitor&&'serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 // Without the picker, run the same due-payment check that selecting a household would run.
 if(!choosing)applyRecurring();
 render();householdPicker();
+if(BudgetStudioCrypto.enabled()){
+ BudgetStudioCrypto.startDialog('unlock',async pass=>{
+  const loaded=await BudgetStudioCrypto.unlockVault(pass);
+  if(!validWorkspace(loaded))throw Error('Die entschlüsselten Haushaltsdaten sind ungültig. Nichts wurde überschrieben.');
+  workspace=loaded;hasSavedWorkspace=true;firstSetupPending=false;storageLocked=false;
+  if(!workspace.activeId||!workspace.households.some(h=>h.id===workspace.activeId))workspace.activeId=workspace.households[0].id;
+  state=household().data;selectedMonth=preferredMonth();choosing=workspace.households.length>1;
+  if(!choosing)applyRecurring();
+  render();householdPicker();
+  try{await photoClearPlain();localStorage.removeItem('budget-studio-vault-photo-cleanup-pending');}catch{localStorage.setItem('budget-studio-vault-photo-cleanup-pending','1');}
+  localStorage.removeItem(KEY);localStorage.removeItem(LEGACY_KEY);
+ });
+}
 function networkStatus(){const el=document.querySelector('#offline-status');if(el){el.textContent=navigator.onLine?'':'Offline-Modus · Daten bleiben auf diesem Gerät';el.classList.toggle('visible',!navigator.onLine)}}
 window.addEventListener('online',networkStatus);window.addEventListener('offline',networkStatus);networkStatus();
