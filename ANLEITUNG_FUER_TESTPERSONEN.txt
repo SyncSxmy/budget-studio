@@ -1,10 +1,10 @@
-BUDGET STUDIO 0.9.6 – KURZE TESTANLEITUNG
+BUDGET STUDIO 0.9.6.1 – KURZE TESTANLEITUNG
 
 1. Nutze nur erfundene Testdaten und harmlose Testbilder. Vor Updates: Datensicherung unter Mehr → Daten & Einstellungen einschließlich Fotos erstellen.
 2. Privat / Haushalt: Übersicht → Abrechnungszeitraum wählen (1.–Monatsende oder 15.–14. Folgemonat). Mit den Pfeilen frühere Monate öffnen.
 3. Ausgaben nach Kategorie: Kategorie aufklappen und Buchungen vergleichen. Der Sechs-Monats-Verlauf nutzt dieselben Monatsgrenzen.
 4. Planung → Abos automatisch erkennen: Mehrere gleichartige, regelmäßige Zahlungen als Test erfassen oder importieren. Prüfe alle vorgeschlagenen Abos selbst.
-5. Geschäft → Aufträge & Kunden: Testkunden erstellen, Auftrag „20 m² Kalksandstein mauern“ oder „50 m² Rollrasen verlegen“ anlegen. Werkzeugliste bearbeiten, abhaken und im Auftrag speichern; PDF-Druckansicht prüfen.
+5. Geschäft → START: Direkt „20 m² Kalksandstein mauern“ eingeben oder eines der Beispiele antippen. „Werkzeuge ermitteln“ → Liste ändern/abhaken → „In Auftrag übernehmen“. Falls nötig erst Testkunden erstellen; Auftrag mit vorausgefüllter Liste speichern. Keine echte KI.
 6. Gutachter: Betriebsart „Gutachter/Kfz-Sachverständige“ auswählen, Test-Schadenfall anlegen, Reparaturkalkulation und bis zu 30 Testfotos prüfen.
 7. Mehr → Cloud-Konto (Beta): nur separate Testkonten; Daten sind bislang NICHT synchronisiert.
 

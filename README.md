@@ -1,4 +1,31 @@
-# Budget Studio 0.9.6 – Werkzeugassistent + flexible Finanzmonate (TEST)
+# Budget Studio 0.9.6.1 – Übersichtlicher Business-Start und Werkzeug-Schnellstart (TEST)
+
+
+**Sicherheitsstatus:** Entwicklungs-/Testversion. Keine echte Bankverbindung, keine vollständige lokale Verschlüsselung und noch keine Cloud-Synchronisation von Konten, Buchungen, Kunden oder Fotos. Bitte keine vertraulichen echten Daten erfassen. Die Cloud-Anmeldung bleibt Beta.
+
+## Neu in 0.9.6
+
+## Neu in 0.9.6.1
+
+- **Direkt auf Start im Geschäftshaushalt**: Schnellaktionen für Werkzeugliste, Auftrag, Kunden sowie Gutachten oder Materialrechner. Ohne Kundenanlage lassen sich Werkzeuglisten direkt erzeugen.
+- Tätigkeit mit Menge eingeben, z. B. `20 m² Kalksandstein mauern`, Personenanzahl wählen und auf „Werkzeuge ermitteln“ tippen. Werkzeugmenge, Bezeichnungen und Häkchen sind bearbeitbar; Liste kann kopiert werden.
+- **In Auftrag übernehmen**: Erst beim ausdrücklichen Übernehmen wird auf die Auftragsverwaltung gewechselt. Ohne Kunden öffnet sich zunächst die Testkunden-Erstellung, danach der vorausgefüllte Auftrag. Werkzeugliste und Änderungen werden bei Auftragsspeicherung gesichert.
+- Die Startseitenliste ist bis zum Speichern eines Auftrags nur ein **flüchtiger Entwurf im geöffneten App-Fenster**. Browser neu starten = Entwurf kann verloren gehen. Bisherige Aufträge bleiben unverändert.
+- Mehr Übersicht: Die Geschäftsauswertung folgt nach dem Schnellstart. Die Hauptnavigation heißt jetzt „Start“ statt „Übersicht“.
+- **Keine echte KI**: Weiterhin lokale regelbasierte Vorschläge und keine automatische Material- oder Gefährdungsplanung.
+
+## Installation (Web)
+
+1. Vor dem Update JSON-Backup mit Fotos anlegen. Browserdaten NICHT löschen.
+2. Alle **15 Dateien** aus dem ZIP ins Root-Verzeichnis des Test-Repositories hochladen, einschließlich **`home-tools.js`**.
+3. Die App bei bestehender Internetverbindung unter `https://syncsxmy.github.io/budget-studio/?v=096c` neu öffnen und unten „0.9.6.1“ prüfen.
+
+## Installation (Android)
+
+Das Android-Projekt enthält denselben Web-Code unter `www/`; die APK wie gewohnt über GitHub Actions bauen. Android-Build und iPhone-PWA müssen noch auf echten Geräten geprüft werden.
+
+# Budget Studio 0.9.6.1 – Übersichtlicher Business-Start und Werkzeug-Schnellstart (TEST)
+
 
 **Sicherheitsstatus:** Entwicklungs-/Testversion. Keine echte Bankverbindung, keine vollständige lokale Verschlüsselung und noch keine Cloud-Synchronisation von Konten, Buchungen, Kunden oder Fotos. Bitte keine vertraulichen echten Daten erfassen. Die Cloud-Anmeldung bleibt Beta.
 
