@@ -42,7 +42,7 @@ function formMarkup(){return `
  </form>
  <p class="muted">Nach der Registrierung kann eine Bestätigung per E-Mail erforderlich sein. Das Supabase-Projekt muss die richtige Weiterleitungsadresse eingetragen haben.</p>`;}
 function signedInMarkup(user,workspaces){return `
- <div class="bs-auth-banner"><strong>Angemeldet</strong><p>${escapeHtml(user.email||'Testnutzer')}</p><p>Die Cloud-Datenbank und deine lokale App sind noch <b>nicht synchronisiert</b>.</p></div>
+ <div class="bs-auth-banner"><strong>Angemeldet</strong><p>${escapeHtml(user.email||'Testnutzer')}</p><p>Deine App-Daten werden nur bei ausdrücklichem Hoch- oder Herunterladen über <b>Mehr → Geräte-Sicherung (Beta)</b> ausgetauscht.</p></div>
  <h3>Cloud-Testarbeitsflächen</h3>
  <div class="bs-workspace-list">${workspaces.length?workspaces.map(w=>`<div class="bs-workspace-item"><strong>${escapeHtml(w.name)}</strong><small>${w.kind==='business'?'Betrieb':w.kind==='shared'?'Gemeinsamer Haushalt':'Privat'} · ${escapeHtml(w.id)}</small></div>`).join(''):'<p class="muted">Noch keine Cloud-Testarbeitsfläche angelegt.</p>'}</div>
  <form class="bs-auth-form" id="bs-create-workspace">
@@ -125,6 +125,14 @@ dialog.addEventListener('click',e=>{
  if(action==='close')dialog.close();
 });
 dialog.addEventListener('close',()=>alertBox(''));
-window.BudgetStudioAuth={open:async()=>{if(!dialog.open)dialog.showModal();await render();}};
+window.BudgetStudioAuth={
+ open:async()=>{if(!dialog.open)dialog.showModal();await render();},
+ getSessionForSync:async()=>{
+  const token=await ensureSession();if(!token)throw Error('Bitte zuerst im Cloud-Konto anmelden.');
+  const user=await request('GET','user',null,token);
+  if(!user||!user.id)throw Error('Angemeldeter Benutzer konnte nicht geprüft werden.');
+  return {id:user.id,token};
+ }
+};
 session=readSession();
 })();

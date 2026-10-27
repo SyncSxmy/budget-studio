@@ -1,11 +1,14 @@
-BUDGET STUDIO 0.9.7 – KURZE TESTANLEITUNG
+Budget Studio 0.9.9 – KI-Helfer (Web-Beta)
 
-1. Nutze nur erfundene Testdaten und harmlose Testbilder. Vor Updates: Datensicherung unter Mehr → Daten & Einstellungen einschließlich Fotos erstellen.
-2. Privat / Haushalt: Übersicht → Abrechnungszeitraum wählen (1.–Monatsende oder 15.–14. Folgemonat). Mit den Pfeilen frühere Monate öffnen.
-3. Ausgaben nach Kategorie: Kategorie aufklappen und Buchungen vergleichen. Der Sechs-Monats-Verlauf nutzt dieselben Monatsgrenzen.
-4. Planung → Abos automatisch erkennen: Mehrere gleichartige, regelmäßige Zahlungen als Test erfassen oder importieren. Prüfe alle vorgeschlagenen Abos selbst.
-5. Geschäft → START: Direkt „20 m² Kalksandstein mauern“ eingeben oder eines der Beispiele antippen. „Werkzeuge ermitteln“ → Liste ändern/abhaken → „In Auftrag übernehmen“. Falls nötig erst Testkunden erstellen; Auftrag mit vorausgefüllter Liste speichern. Keine echte KI.
-6. Gutachter: Betriebsart „Gutachter/Kfz-Sachverständige“ auswählen, Test-Schadenfall anlegen, Reparaturkalkulation und bis zu 30 Testfotos prüfen.
-7. Mehr → Cloud-Konto (Beta): nur separate Testkonten; Daten sind bislang NICHT synchronisiert.
+1. Web-App öffnen und einen Haushalt bzw. Betrieb auswählen.
+2. Auf die Schaltfläche „✦ KI-Helfer“ tippen.
+3. „App-Hilfe“ für Fragen zur Bedienung oder „Fachhilfe“ für berufliche Fragen wählen.
+4. Bei der Fachhilfe stimmt der vorgeschlagene Fachbereich mit dem Betrieb überein? Bei Bedarf auswählen.
+5. Für echte KI-Antworten im Cloud-Konto anmelden und im KI-Fenster der Übermittlung zustimmen.
+6. Beispiel: „Welche Werkzeuge brauche ich für 20 m² Kalksandsteinmauerwerk?“
 
-WICHTIG: Entwicklungs-Testversion. Weder echte Bankanbindung noch vollständige Verschlüsselung. Werkzeugermittlung erfolgt offline durch Regeln, nicht durch echte KI. Bitte keine echten Bankdaten, Kundenakten oder Schadensfotos verwenden.
+WICHTIG: Der KI-Anbieter-Schlüssel muss vom Entwickler zuvor als Supabase-Secret hinterlegt worden sein. Wenn dies noch nicht passiert ist, erhältst du eine Aktivierungswarnung. Das ist kein Anmeldefehler.
+
+Die KI ist experimentell und darf falsche Angaben machen. Keine echten Kontodaten, Zugangsdaten, Adressen, Mandanten- oder Kundendaten eingeben. Keine verbindliche Statik, Brandschutz-/Elektroprüfung oder sachverständige Begutachtung.
+
+Version 0.9.9 – nur Testdaten.

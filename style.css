@@ -466,3 +466,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 #bs-vault-save-status[data-state=saving]{background:#785d25}
 .plaintext-backup-details{padding:12px;border:1px dashed var(--line);border-radius:12px}
 .plaintext-backup-details summary{cursor:pointer;font-size:13px;font-weight:650}
+
+/* Budget Studio 0.9.8 — opt-in encrypted cloud device handoff */
+#bs-sync-dialog{width:min(94vw,520px);max-width:none;max-height:87dvh;overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:23px;padding:20px;box-shadow:0 20px 70px #0008}
+#bs-sync-dialog::backdrop{background:#06101ed8;backdrop-filter:blur(4px)}
+#bs-sync-dialog .bs-auth-form{margin:14px 0;border-top:1px solid var(--line);padding-top:12px}
+#bs-sync-dialog h3{font-size:16px;margin:2px 0}
+#bs-sync-status:not([hidden]){border-radius:12px;background:var(--soft);padding:12px;font-size:13px;overflow-wrap:anywhere;line-height:1.55;margin-bottom:10px}
+#bs-sync-status[data-kind=error]{background:#5c2527;color:#fff}
+.bs-sync-info{font-size:13px;line-height:1.8;background:var(--soft);border-radius:12px;padding:12px}
+.bs-sync-warning{border:1px solid #d9a54e;border-radius:12px;padding:12px;font-size:13px;line-height:1.6;margin:10px 0}
+.bs-sync-warning p{margin:6px 0}
+.bs-sync-footnote{font-size:12px;line-height:1.6}
+#bs-sync-restore-preview .primary{width:100%;min-height:46px;margin:8px 0}
+#bs-sync-close{font-size:24px}

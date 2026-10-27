@@ -1,41 +1,46 @@
-# Budget Studio 0.9.7 – Lokaler Datentresor & verschlüsselte Sicherungen (BETA)
+# Budget Studio 0.9.9 – KI-Helfer (Web-Beta)
 
-**Sicherheitsstatus: experimentelle Testversion – kein unabhängiger Sicherheitstest. Bitte weiterhin nur Testdaten verwenden.** Die verschlüsselte Cloud-Synchronisierung, eine echte Bankverbindung und die sichere Native-App-Integration sind **nicht** enthalten. Es wurde kein Benutzer- oder Finanzdatensatz nach Supabase übertragen.
+**Wichtig:** Die Web-Oberfläche und die geschützte Supabase-Edge-Function sind vorbereitet. Damit das KI-Modell wirklich antwortet, muss der Projektinhaber einmalig einen gültigen, separat abgerechneten API-Schlüssel beim KI-Anbieter einrichten und als Supabase-Secret speichern. Es wurde **kein** Schlüssel in diese ZIP oder in GitHub-Dateien geschrieben. Die finale API-Funktion konnte noch nicht mit einem bezahlten, echten Modellaufruf geprüft werden. Bitte weiterhin nur Testdaten verwenden.
 
-## Neu
+## Neu in der App
 
-- **Verschlüsselte Datensicherung inklusive vorhandener Fotos** (`.bsafe`) unter **Mehr → Daten & Einstellungen**.
-- Jeder Export bekommt ein eigenes Passwort. Die Sicherung nutzt **AES-256-GCM** mit zufälligem 12-Byte-Nonce und **PBKDF2-HMAC-SHA256** (600.000 Iterationen, zufälliges 16-Byte-Salt). AES-GCM prüft gleichzeitig die Datenintegrität.
-- **Lokaler Datentresor (freiwillig einschaltbar):** Haushalte, Buchungen, Business-Aufträge, Schadenakten und Bildbeschreibungen liegen danach AES-GCM-verschlüsselt in IndexedDB. Fotos aus dem separaten lokalen Bilder-Speicher werden einzeln verschlüsselt in den Tresor übertragen.
-- Beim nächsten Start fragt die App nach dem Tresorpasswort. Falsche Passwörter und beschädigte Daten werden abgewiesen.
-- Alte JSON-Sicherungen lassen sich weiterhin importieren. Einen Klartext-Export bietet die App nur noch für die **nicht** mit dem Tresor gesicherte Testinstallation nach ausdrücklicher Warnung an.
-- Der Tresor bestätigt asynchrone Speichervorgänge und zeigt Fehler sichtbar an. Beim Verlassen einer Seite mit ungespeicherten Änderungen wird gewarnt; Browser können trotzdem abrupt beendet werden.
+- Immer erreichbarer Button **✦ KI-Helfer** auf der Startseite und den anderen Bereichen; funktioniert am Handy und am Computer.
+- Chat mit zwei Modi: **App-Hilfe** für Budget Studio und **Fachhilfe** für Maurer/Hochbau, Tiefbau, Elektro, Maler, Fliesen, Trockenbau, Beton, SHK, Dach, Gartenbau, Gastro und Kfz-Gutachter.
+- Fachbereich wird aus den für den aktuellen Betrieb gewählten Gewerken abgeleitet. Du kannst ihn im Chat umstellen, die Auswahl wird nur im lokalen Haushalt gespeichert.
+- Drei passende Beispielfragen, Gesprächsverlauf für die aktuelle Sitzung, Button zum Leeren des Chats.
+- Die Daten werden erst nach Anmelden mit dem bestehenden Supabase-Testkonto und **aktiver Zustimmung zur Übermittlung der Chatfrage** an die serverseitige KI gesendet.
+- **Nur** die aktuelle Frage, bis zu sechs letzte Chateinträge, gewählter Modus und Gewerk und aktuelle App-Ansicht werden übertragen. **Keine** gespeicherten Kontobewegungen, Kundenakten, Fotos, Passwörter oder gesamte Haushalte werden automatisch an das Modell übertragen.
+- Die Serverfunktion kontrolliert den Benutzer über Supabase Auth und setzt serverseitig ein Limit von **15 Anfragen/Stunde und 45 Anfragen/Tag pro Konto**. App-Schlüssel sind öffentlich (Publishable Key), der spätere KI-Anbieter-Schlüssel bleibt im Supabase-Secret.
 
-## Sicheres Update von 0.9.6.1
+## Web-App aktualisieren
 
-1. In der bisherigen App **Mehr → Daten & Einstellungen** öffnen und eine vollständige Datensicherung **mit Fotos** erstellen. Prüfen, dass die Datei tatsächlich vorhanden ist, und sicher verwahren.
-2. Die ZIP entpacken. **Alle 16 Dateien** einschließlich `crypto-extra.js` ins Repository `SyncSxmy/budget-studio` hochladen, bestehende Dateien ersetzen; nicht ZIP als eine Datei hochladen.
-3. GitHub Pages mit bestehender Internetverbindung öffnen: `https://syncsxmy.github.io/budget-studio/?v=097a`. Einmal neu laden. In der Fußzeile sollte **0.9.7** stehen.
-4. Zuerst auf **Mehr → Daten & Einstellungen → Verschlüsselte Sicherung inklusive Fotos herunterladen** klicken. Ein **starkes, eigenes Passwort** mit mindestens 12 Zeichen setzen und die `.bsafe` speichern. Ein kurzer Test mit harmlosen Daten auf einer zweiten Testinstallation ist ratsam.
-5. Erst danach freiwillig **Lokale Daten verschlüsseln** auswählen. Für den Tresor ein eigenes langes Passwort vergeben und sicher aufbewahren. Die App schreibt und prüft zuerst verschlüsselte Daten, bevor bisherige Klartextdaten aus dem verwendeten Browser-Speicher gelöscht werden.
-6. App schließen/neu starten: Tresor entsperren. Ein falsches Passwort darf ihn nicht öffnen. Ein neu angelegter Testeintrag muss nach einem erneuten Start noch da sein.
+1. In der bisherigen Web-App unter **Mehr → Daten & Einstellungen** zuerst eine **verschlüsselte Sicherung mit Fotos** als `.bsafe` herunterladen und die Sicherung samt Passwort gut aufbewahren.
+2. ZIP entpacken und **alle Dateien aus dem Stammordner** des Pakets in das GitHub-Repository `SyncSxmy/budget-studio` hochladen; bestehende Dateien überschreiben. **Nicht nur** `index.html` ersetzen; die neuen Dateien `ai-helper.js` und `ai-helper.css` gehören dazu.
+3. Deployment abwarten. Die Web-App unter `https://syncsxmy.github.io/budget-studio/?v=099a` mit Internet neu laden. Im Fuß sollte **Web-Testversion 0.9.9** stehen.
+4. Betrieb oder Haushalt auswählen. Im unteren Bereich erscheint **✦ KI-Helfer**. Darauf tippen, **App-Hilfe** oder **Fachhilfe** wählen und das Thema prüfen.
+5. Mit bestehendem Cloud-Konto unter **Mehr → Cloud-Konto (Beta)** anmelden, im KI-Fenster der Übermittlung zustimmen und eine harmlose Frage testen.
 
-## Ganz wichtige Grenzen
+## Einmaliges Aktivieren der echten KI (durch den Projektinhaber)
 
-- **Passwort vergessen = lokaler Tresor nicht mehr entschlüsselbar.** Der Anbieter kann das Passwort nicht zurücksetzen. Nur eine separat verwahrte `.bsafe` mit bekanntem **Backup-Passwort** kann die Daten retten: Die gesperrte Testinstallation zunächst vollständig zurücksetzen (dadurch wird der lokale Tresor endgültig gelöscht), dann in einer frischen App die externe `.bsafe` importieren. **Nie den Browserspeicher löschen, bevor die externe Sicherungsdatei kontrolliert vorhanden ist!**
-- **Die Sicherung bleibt notwendig**, auch mit Tresor: Wenn iOS/Android Browserdaten automatisch löscht oder die App deinstalliert wird, kann der lokale Tresor verschwinden.
-- Bestehende **bereits heruntergeladene Klartext-JSON-Backups, Betriebssystem-Backups, Kopien auf anderen Geräten** werden durch die Migration **nicht** nachträglich verschlüsselt. Sie müssen separat geschützt/entsorgt werden.
-- Der aktuelle Cloud-Testlogin speichert kurzlebige Anmeldedaten im Sitzungsspeicher des Browsers und ist **nicht Teil des Tresors**. Noch keine Cloud-Finanzdaten synchronisieren.
-- Verschlüsselung im Browser schützt gegen das einfache Auslesen lokaler Dateien, **nicht** gegen Schadsoftware, kompromittierte Browser, bösartige Skripte oder die Nutzung eines entsperrten Geräts. Das ist **noch kein Nachweis einer DSGVO-konformen Gesamtanwendung**.
-- Auf großen iPhone-Datenbeständen kann die Migration wegen **zu wenig vorübergehend freiem Speicher** scheitern. In diesem Fall bleiben die bisherigen Klartextdaten bestehen. Keinesfalls Browserdaten löschen, bevor eine wiederherstellbare `.bsafe` extern gesichert ist.
-- Eine Rückkehr zu einer alten App-Version **nach Tresor-Aktivierung** wird nicht unterstützt; ältere App-Versionen können den Tresor nicht lesen.
-- Wenn die App „Speichern fehlgeschlagen“ meldet, **nicht schließen**, sondern Fehler beheben und eine Sicherung erstellen.
-- Die bisherige Fotoverkleinerung bleibt bestehen: Für echte Gutachterfälle muss eine unveränderte Originalbildarchivierung separat entwickelt werden.
+1. Ein OpenAI-API-Konto auf `https://platform.openai.com/` einrichten, API-Abrechnung und ein kleines Budgetlimit hinterlegen. Ein **ChatGPT-Plus-Abonnement deckt die API-Gebühren nicht ab**.
+2. Einen API-Schlüssel unter `https://platform.openai.com/api-keys` erzeugen. **Niemals** den Schlüssel hier im Chat oder in GitHub veröffentlichen.
+3. In `https://supabase.com/dashboard` das Budget-Studio-Projekt wählen und **Edge Functions → Secrets** (oder „Edge Function Secrets“) öffnen. Dort einen neuen Eintrag mit dem Namen **`OPENAI_API_KEY`** und als Wert den eigenen Schlüssel erstellen und speichern.
+4. Die Funktion `budget-studio-ai` ist bereits im Supabase-Projekt **`octimjkrwiueowppivph`** bereitgestellt und liest den Schlüssel direkt serverseitig. Du musst keine geheime Datei in die Web-App laden und die Funktion normalerweise nicht neu deployen. Standardmodell: **`gpt-5-mini`**; bei Bedarf kann der Serverbesitzer später über das Secret `OPENAI_MODEL` ein unterstütztes Modell wählen.
+5. Eine Testfrage stellen. Ohne Schlüssel zeigt der Chat eine klare Meldung „echte KI noch nicht aktiviert“ statt erfundene Antworten.
+
+## Datenschutz und Sicherheit (Beta!)
+
+- Die Fragen werden nach Einwilligung zur externen OpenAI-API gesendet; die Supabase-Verschlüsselung des lokalen Tresors gilt **nicht** als Ende-zu-Ende-Verschlüsselung für absichtlich freigegebene Chatfragen. Die App speichert den Chatverlauf nur im Arbeitsspeicher der geöffneten Seite, nicht als gesonderte Chatdatenbank. Der API-Anbieter und Infrastruktur können entsprechend ihren Nutzungsbedingungen Daten verarbeiten.
+- Bevor echte personenbezogene Daten über den KI-Chat verarbeitet werden, sind die rechtlichen Grundlagen, Informationspflichten, Dienstleisterverträge und ggf. internationale Datenübermittlung zu klären. Der Assistent ist **keine** geprüfte Lösung für vertrauliche Mandanten-, Bank- oder Kundendaten.
+- Keine verbindlichen Angaben zu Statik, DIN-Normen, Brandschutz, elektrischen Anlagen oder Kfz-Gutachten. Fachliche Antworten stets anhand aktueller Normen, Pläne und Herstellerangaben prüfen.
+- Die Funktion sieht **nicht** die Inhalte deiner Konten, Kunden, Aufträge oder Bilder und kann **keine** Änderungen an App-Daten ausführen. Sie gibt derzeit ausschließlich Textantworten.
+- Nur `https://syncsxmy.github.io` ist als aktuelle öffentliche Browserdomain in der Edge Function freigegeben; bei Umstieg auf eine eigene Domain ist die Liste der erlaubten Ursprünge in der Serverfunktion zu ergänzen.
+- Sicherheitsmodell: Der Endpunkt ist technisch öffentlich erreichbar, lässt aber erst nach **serverseitiger Prüfung eines gültigen Benutzertokens** Modellanfragen zu. Die Supabase-Option `verify_jwt=false` ist hier notwendig, weil die Edge Function moderne Auth-Tokens eigenständig via `/auth/v1/user` prüft. **Nicht die Authentifizierungsprüfung entfernen.**
+- Die Supabase-Sicherheitsprüfung meldet aktuell eine weiterhin deaktivierte „Leaked Password Protection“-Option; die geschlossene Beta darf deshalb noch nicht als vollständig sicher betrachtet werden.
 
 ## Teststatus
 
-- Geprüft mit Node.js/WebCrypto-Tests: Verschlüsselung/Entschlüsselung, Falschpasswort, beschädigte Datei, Migration, verschlüsselte Fotos, Änderungs-Speicherung, Sperren/Entsperren.
-- Geprüft: App-Oberfläche per isoliertem Chromium-Test (Start und Sicherheitsdialog ohne JavaScript-Fehler).
-- **Nicht geprüft:** der vollständige Ablauf auf iOS Safari/iPhone, Android/BlueStacks, mit großen realen Dateibeständen oder eine externe Sicherheitsprüfung.
-
-Die Entwicklung von Budget Studio bleibt übergangsweise auf GitHub Pages. Später erhält die App eine eigene Website und native iOS-/Android-Veröffentlichungen mit entsprechend abgesicherter Anmeldung und Cloud-Synchronisation.
+- Statische Prüfung: `node --check` über alle JavaScript-Dateien bestanden.
+- Mobiler UI-Test mit Chromium in einer isolierten Testseite: Öffnen des KI-Fensters, Umschalten auf Fachhilfe, automatisch ausgewähltes Maurer-Gewerk und Darstellung einer simulierten Chatantwort bestanden.
+- Supabase: Authentifizierungsschnittstelle und serverseitige Quoten-Tabelle eingerichtet; Edge Function `budget-studio-ai` Status ACTIVE.
+- **Nicht getestet:** echter API-Aufruf mit aktivierter OpenAI-Abrechnung, vollständiger Browserbetrieb der integrierten App auf iOS und Android, Sicherheits- und Lasttest. Keine Freigabe für echte Finanz-/Gutachterdaten.
